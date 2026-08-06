@@ -47,14 +47,8 @@
         .product-card .product-img-placeholder span{background:rgba(0,0,0,0.04);padding:4px 12px;border-radius:12px;font-size:12px;color:#999}
         .product-card .name{font-weight:600;font-size:15px;min-height:40px}
         .product-card .price{color:#1e3a8a;font-weight:700;font-size:18px;margin:6px 0 12px}
-        .product-card .stock-info{font-size:11px;color:#888;margin:-4px 0 8px}
-        .product-card .stock-info .in-stock{color:#22c55e}
-        .product-card .stock-info .out-stock{color:#ef4444}
-        .product-card .stock-info .low-stock{color:#f59e0b}
-        .product-card .stock-info .neg-stock{color:#dc2626;font-weight:700}
         .product-card .add-btn{background:#1e3a8a;color:#fff;border:none;border-radius:30px;padding:10px 0;width:100%;font-weight:600;cursor:pointer}
         .product-card .add-btn:active{background:#172554}
-        .product-card .add-btn.disabled{background:#ccc;cursor:not-allowed}
         .product-card .unidad-tag{font-size:10px;color:#888;background:#f0ede8;padding:1px 10px;border-radius:12px;display:inline-block;margin-bottom:2px}
         .product-card .codigo-tag{font-size:9px;color:#999;background:#f0f4ff;padding:1px 8px;border-radius:8px;display:inline-block;margin-bottom:2px}
         .promo-banner{position:absolute;bottom:45px;left:50%;transform:translateX(-50%);background:#1e3a8a;color:#fff;font-size:11px;font-weight:700;padding:3px 16px;border-radius:12px;box-shadow:0 2px 10px rgba(30,58,138,0.4);z-index:10;letter-spacing:0.5px;text-transform:uppercase;width:auto;white-space:nowrap}
@@ -199,6 +193,10 @@
         .btn-verde{background:#22c55e;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:600;cursor:pointer}
         .btn-reiniciar-dia{background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px}
         .btn-reiniciar-dia:hover{background:#c0392b}
+        .btn-corte-caja{background:#f59e0b;color:#1e293b;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px}
+        .btn-corte-caja:hover{background:#d97706}
+        .btn-imprimir-corte{background:#1e3a8a;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px}
+        .btn-imprimir-corte:hover{background:#172554}
         .top-product-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;font-size:12px}
         .top-product-item .top-pos{font-weight:700;color:#1e3a8a;min-width:24px}
         .top-product-item .top-name{flex:1;padding:0 8px}
@@ -309,7 +307,7 @@
 
     <div class="search-bar">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" id="searchInput" placeholder="🔎 Buscar productos o escanear código..." />
+        <input type="text" id="searchInput" placeholder="🔎 Buscar productos..." />
         <button class="scan-btn" id="scanBtn"><i class="fas fa-camera"></i> Escanear</button>
     </div>
     <div class="search-spacer"></div>
@@ -351,7 +349,8 @@
                 <div class="form-group">
                     <label>🏷️ Tipo de Venta</label>
                     <select id="tipoVenta" style="width:100%;padding:10px;border-radius:12px;border:1px solid #ddd;font-size:14px;">
-                        <option value="mostrador">🏪 Mostrador (Sin ticket)</option>
+                        <option value="mostrador">🏪 Mostrador (Con ticket)</option>
+                        <option value="mostrador_sin_ticket">🏪 Mostrador (Sin ticket)</option>
                         <option value="domicilio">🚚 Domicilio (Con ticket)</option>
                         <option value="pedido">📦 Pedido (Con ticket)</option>
                         <option value="credito">💳 Crédito (Con ticket)</option>
@@ -583,9 +582,9 @@
                 <div class="admin-tab-content" id="tabCorte">
                     <h3 class="section-title">💰 Corte de Caja</h3>
                     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-                        <button class="btn-save" id="btnCorteCaja" style="flex:1;padding:8px;font-size:13px;background:#f59e0b;color:#1e293b;"><i class="fas fa-calculator"></i> Calcular Corte</button>
-                        <button class="btn-secondary" id="btnImprimirCorte" style="flex:1;padding:8px;font-size:13px;"><i class="fas fa-print"></i> Imprimir Corte</button>
-                        <button class="btn-reiniciar-dia" id="btnReiniciarDia" style="flex:0.7;padding:8px;font-size:13px;"><i class="fas fa-undo"></i> Reiniciar Día</button>
+                        <button class="btn-corte-caja" id="btnCorteCaja"><i class="fas fa-calculator"></i> Calcular Corte</button>
+                        <button class="btn-imprimir-corte" id="btnImprimirCorte"><i class="fas fa-print"></i> Imprimir Corte</button>
+                        <button class="btn-reiniciar-dia" id="btnReiniciarDia"><i class="fas fa-undo"></i> Reiniciar Día</button>
                     </div>
                     <div id="corteResultado">
                         <div class="pos-corte-stats">
@@ -661,14 +660,14 @@
                 <button class="btn-save btn-secondary" id="resetCategoriesBtn" onclick="resetCategories()">🔄 Restaurar categorías por defecto</button>
                 <button class="btn-save btn-danger" id="clearOrdersBtn" onclick="eliminarTodosPedidos()" style="background:#e67e22;">🗑️ Eliminar todos los pedidos</button>
 
-                <div class="help-text"><strong>📌 Acceso:</strong> 5 clics en el logo · Contraseña: <strong>admin123</strong><br /><strong>📸 Imágenes:</strong> Puedes subir fotos desde tu PC o celular al agregar o editar un producto.<br /><strong>🔄 Sincronización:</strong> Los datos se guardan automáticamente en la nube.<br /><strong>📦 Inventario:</strong> Cada producto tiene stock. Se descuenta al hacer pedidos y se actualiza con compras.<br /><strong>📏 Unidades:</strong> pza, kg, ml, m3, jgo, lt, gr, doc, paq, caja, bolsa.<br /><strong>🖨️ Impresión:</strong> Botón de imprimir en cada módulo.<br /><strong>💰 POS:</strong> Métodos de pago: Efectivo, Tarjeta, Transferencia, Crédito · Cambio automático.<br /><strong>📱 Escáner:</strong> Usa la cámara para leer códigos de barras. Apunta al código y se agrega automáticamente al carrito.<br /><strong>🏷️ SKU:</strong> Generador automático de códigos SKU.<br /><strong>🏷️ Etiquetas:</strong> Imprime etiquetas con nombre y código del producto.<br /><strong>📊 Corte:</strong> Ticket promedio, tráfico de clientes, utilidad, compras del día, mermas.</div>
+                <div class="help-text"><strong>📌 Acceso:</strong> 5 clics en el logo · Contraseña: <strong>admin123</strong><br /><strong>📸 Imágenes:</strong> Puedes subir fotos desde tu PC o celular al agregar o editar un producto.<br /><strong>🔄 Sincronización:</strong> Los datos se guardan automáticamente en la nube.<br /><strong>📦 Inventario:</strong> Cada producto tiene stock. Se descuenta al hacer pedidos y se actualiza con compras.<br /><strong>📏 Unidades:</strong> pza, kg, ml, m3, jgo, lt, gr, doc, paq, caja, bolsa.<br /><strong>🖨️ Impresión:</strong> Botón de imprimir en cada módulo.<br /><strong>💰 POS:</strong> Métodos de pago: Efectivo, Tarjeta, Transferencia, Crédito · Cambio automático.<br /><strong>📱 Escáner:</strong> Usa la cámara para leer códigos de barras.<br /><strong>🏷️ SKU:</strong> Generador automático de códigos SKU.<br /><strong>🏷️ Etiquetas:</strong> Imprime etiquetas con nombre y código del producto.<br /><strong>📊 Corte:</strong> Ticket promedio, tráfico de clientes, utilidad, compras del día, mermas.</div>
             </div>
         </div>
     </div>
 
     <script>
         // ================================================================
-        // CONFIGURACIÓN SUPABASE
+        // CONFIGURACIÓN SUPABASE - GAETO
         // ================================================================
         const SUPABASE_URL = 'https://rvvvlrbtmhfbkygzcebw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_J2uG3_9SeR4VAWei9w_7bA_2WXxsSQ5';
@@ -686,7 +685,7 @@
             storeName: 'GAETO POS',
             adminPassword: 'admin123',
             unlockPassword: '#Gael680912',
-            storeUrl: 'https://tolentinojose01-collab.github.io/GAETO-COMERCIOS.TIENDADEMO/'
+            storeUrl: 'https://tolentinojose01-collab.github.io/catalogodigital-puntoventagc/'
         };
 
         // ================================================================
@@ -889,7 +888,7 @@
         }
 
         // ================================================================
-        // RENDERIZADO PRINCIPAL
+        // RENDERIZADO PRINCIPAL - CATÁLOGO SIN STOCK
         // ================================================================
         function renderCategories() {
             const container = document.getElementById('categoriesContainer');
@@ -897,7 +896,6 @@
             const allBtn = document.createElement('button');
             allBtn.className = 'cat-btn' + (currentCategory === 'todos' ? ' active' : '');
             allBtn.dataset.cat = 'todos';
-            // Mostrar todos los productos (incluyendo sin stock) en el contador
             allBtn.innerHTML = `📦 Todos <span class="cat-count">${products.length}</span>`;
             container.appendChild(allBtn);
             categories.forEach(c => {
@@ -910,9 +908,9 @@
             });
         }
 
+        // 🔥 FUNCIÓN RENDER PRODUCTOS - SIN INDICADORES DE STOCK
         function renderProducts(category, search = '') {
             const container = document.getElementById('productsContainer');
-            // 🔥 MOSTRAR TODOS LOS PRODUCTOS (incluso sin stock) - SIN "AGOTADO"
             let filtered = products;
             if (category !== 'todos') filtered = filtered.filter(p => p.category === category);
             if (search.trim()) {
@@ -931,24 +929,12 @@
                 const imageHtml = hasImage ? `<img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy" />` : `<div class="product-img-placeholder"><span>📷 Sin imagen</span></div>`;
                 const promoHtml = p.promocion ? '<div class="promo-banner">🔥 PROMOCIÓN</div>' : '';
                 const promoClass = p.promocion ? 'promocion' : '';
-                const stock = parseInt(p.stock) || 0;
                 const unidad = p.unidad || 'pza';
-                // 🔥 SOLO MOSTRAR STOCK SI ES POSITIVO (sin palabra "Agotado")
-                let stockHtml = '';
-                if (stock > 0 && stock <= 5) {
-                    stockHtml = `<div class="stock-info"><span class="low-stock">⚠️ ¡Últimas ${stock} ${unidad}!</span></div>`;
-                } else if (stock > 5) {
-                    stockHtml = `<div class="stock-info"><span class="in-stock">✅ ${stock} ${unidad} disponibles</span></div>`;
-                } else if (stock < 0) {
-                    stockHtml = `<div class="stock-info"><span class="neg-stock">⚠️ Stock: ${stock} ${unidad}</span></div>`;
-                }
-                // 🔥 ELIMINADO: ya no muestra "Agotado" (out-stock)
-                const disabledClass = stock <= 0 ? 'disabled' : '';
                 const unidadLabel = {pza:'🧩',kg:'⚖️',ml:'🧪',m3:'📐',jgo:'🔄',lt:'🫗',gr:'⚖️',doc:'📦',paq:'📦',caja:'📦',bolsa:'🛍️'}[unidad] || '📦';
                 const codigoHtml = p.codigo ? `<div class="codigo-tag">🔲 ${p.codigo}</div>` : '';
-                // 🔥 Botón siempre visible, pero deshabilitado si stock <= 0
-                const btnText = stock > 0 ? '➕ Agregar' : '📦 Sin stock';
-                return `<div class="product-card ${promoClass}">${promoHtml}${imageHtml}<div class="name">${p.name}</div>${codigoHtml}<div class="unidad-tag">${unidadLabel} ${unidad}</div><div class="price">$${p.price}</div>${stockHtml}<button class="add-btn ${disabledClass}" onclick="addToCart(${p.id})" ${stock <= 0 ? 'disabled' : ''}>${btnText}</button></div>`;
+                
+                // 🔥 SIN INDICADORES DE STOCK - SIEMPRE BOTÓN AGREGAR
+                return `<div class="product-card ${promoClass}">${promoHtml}${imageHtml}<div class="name">${p.name}</div>${codigoHtml}<div class="unidad-tag">${unidadLabel} ${unidad}</div><div class="price">$${p.price}</div><button class="add-btn" onclick="addToCart(${p.id})">➕ Agregar</button></div>`;
             }).join('');
         }
 
@@ -967,15 +953,13 @@
                 totalEl.textContent = 'Total: $0'; return;
             }
             container.innerHTML = cart.map(item => {
-                const prod = products.find(p => p.id === item.id);
-                const stock = prod ? parseInt(prod.stock) || 0 : 0;
                 return `
                 <div class="cart-item">
                     <div class="item-info"><div class="item-name">${item.name}</div><div class="item-price">$${item.price} c/u</div></div>
                     <div class="qty-control">
                         <button class="qty-minus" onclick="removeFromCart(${item.id})">−</button>
                         <span class="qty-num">${item.qty}</span>
-                        <button class="qty-plus" onclick="addToCart(${item.id})" ${item.qty >= stock ? 'disabled style="opacity:0.5;"' : ''}>+</button>
+                        <button class="qty-plus" onclick="addToCart(${item.id})">+</button>
                         <span class="item-total">$${item.price * item.qty}</span>
                     </div>
                     <button class="item-remove" onclick="eliminarItemCarrito(${item.id})">✕</button>
@@ -985,16 +969,14 @@
             totalEl.textContent = `Total: $${total}`;
         }
 
+        // 🔥 ADD TO CART - SIN VALIDACIÓN DE STOCK
         function addToCart(id) {
             const product = products.find(p => p.id === id);
             if (!product) return;
-            const stock = parseInt(product.stock) || 0;
             const item = cart.find(i => i.id === id);
             if (item) {
-                if (item.qty >= stock && stock > 0) { showToast('⚠️ No hay suficiente stock'); return; }
                 item.qty++;
             } else {
-                if (stock <= 0) { showToast('⚠️ Producto sin stock'); return; }
                 cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
             }
             saveData('gaeto_carrito', cart);
@@ -1033,7 +1015,7 @@
         }
 
         // ================================================================
-        // ESCÁNER DE CÓDIGOS DE BARRAS - CORREGIDO
+        // ESCÁNER DE CÓDIGOS DE BARRAS
         // ================================================================
         function iniciarScanner() {
             const modal = document.getElementById('cameraModal');
@@ -1044,7 +1026,6 @@
             errorEl.style.display = 'none';
             scannerActive = true;
             
-            // Limpiar cualquier stream anterior
             if (scannerStream) {
                 scannerStream.getTracks().forEach(track => track.stop());
                 scannerStream = null;
@@ -1072,7 +1053,7 @@
                 })
                 .catch(function(err) {
                     errorEl.style.display = 'block';
-                    errorEl.textContent = '⚠️ No se pudo acceder a la cámara: ' + err.message + '. Verifica permisos en tu navegador.';
+                    errorEl.textContent = '⚠️ No se pudo acceder a la cámara: ' + err.message;
                     scannerActive = false;
                 });
             } else {
@@ -1105,13 +1086,6 @@
                             });
                         })
                         .catch(() => {});
-                } else {
-                    // Fallback: usar input manual
-                    const codigo = prompt('📱 Escanea el código manualmente o ingresa el código del producto:');
-                    if (codigo && codigo.trim()) {
-                        detenerScanner();
-                        procesarCodigoEscaneado(codigo.trim());
-                    }
                 }
             } catch(e) {
                 console.log('Error al leer código:', e);
@@ -1545,7 +1519,7 @@
         }
 
         // ================================================================
-        // POS - PROCESAR VENTA
+        // POS - PROCESAR VENTA (Mostrador CON Ticket)
         // ================================================================
         function procesarVentaPOS() {
             if (cart.length === 0) { showToast('🛒 Carrito vacío', 'error'); return; }
@@ -1557,17 +1531,8 @@
             const tipoVenta = document.getElementById('tipoVenta').value || 'mostrador';
             const metodoPago = metodoPagoSeleccionado || 'efectivo';
 
-            // Verificar stock
-            for (const item of cart) {
-                const prod = products.find(p => p.id === item.id);
-                if (!prod) { showToast(`❌ Producto "${item.name}" no existe`, 'error'); return; }
-                if ((parseInt(prod.stock) || 0) < item.qty) {
-                    showToast(`❌ Stock insuficiente para "${item.name}". Disponible: ${prod.stock}`, 'error');
-                    return;
-                }
-            }
-
-            // Descontar stock
+            // 🔥 NO VERIFICAR STOCK - SIEMPRE PERMITIR VENTA
+            // Simplemente descontar stock (puede quedar negativo)
             for (const item of cart) {
                 const prod = products.find(p => p.id === item.id);
                 if (prod) {
@@ -1647,14 +1612,19 @@
 
             document.getElementById('checkoutModal').classList.remove('open');
 
-            // 🔥 SOLO mostrar ticket si NO es Mostrador
-            if (tipoVenta !== 'mostrador') {
+            // 🔥 LÓGICA MODIFICADA: Si es "mostrador_sin_ticket", no abrir el ticket
+            if (tipoVenta !== 'mostrador_sin_ticket') {
                 const ticketData = { ...pedido, metodoPago, cambio, pagaCon };
                 generarTicket(ticketData);
-                showToast('✅ Venta registrada - Ticket generado');
+                const tipoLabel = tipoVenta === 'mostrador' ? 'Mostrador' : tipoVenta;
+                showToast(`✅ Venta en ${tipoLabel} registrada - Ticket generado`);
             } else {
-                showToast('✅ Venta en mostrador registrada (sin ticket)');
+                showToast('✅ Venta en Mostrador (Sin ticket) registrada');
             }
+            
+            renderCategories();
+            renderProducts(currentCategory, searchTerm);
+            showToast('🛒 Puedes seguir agregando productos al carrito');
         }
 
         // ================================================================
@@ -1772,9 +1742,10 @@
         }
 
         // ================================================================
-        // CORTE DE CAJA - CORREGIDO
+        // CORTE DE CAJA
         // ================================================================
         function calcularCorte() {
+            console.log('🔍 Calculando corte...');
             const hoy = new Date();
             hoy.setHours(0,0,0,0);
             const ventasHoy = ventas.filter(v => {
@@ -1803,7 +1774,6 @@
                 }
             });
 
-            // Compras del día
             const comprasHoy = compras.filter(c => {
                 const fechaCompra = new Date(c.fecha);
                 fechaCompra.setHours(0,0,0,0);
@@ -1811,14 +1781,11 @@
             });
             const totalComprasDia = comprasHoy.reduce((s, c) => s + (c.total || 0), 0);
 
-            // Mermas (productos con stock negativo)
             const mermas = products.filter(p => parseInt(p.stock) < 0);
             const totalMermas = mermas.reduce((s, p) => s + (Math.abs(parseInt(p.stock)) * (p.costo || p.price || 0)), 0);
 
-            // Ticket promedio
             const ticketPromedio = ventasHoy.length > 0 ? total / ventasHoy.length : 0;
 
-            // Top productos
             const ventasProductos = {};
             ventasHoy.forEach(v => {
                 if (v.productos) {
@@ -1832,7 +1799,6 @@
             const topProducto = topProductos.length > 0 ? topProductos[0][0] : '-';
             const topCantidad = topProductos.length > 0 ? topProductos[0][1] : 0;
 
-            // Actualizar UI
             document.getElementById('corteTotal').textContent = '$' + total.toFixed(2);
             document.getElementById('corteEfectivo').textContent = '$' + efectivo.toFixed(2);
             document.getElementById('corteTarjeta').textContent = '$' + tarjeta.toFixed(2);
@@ -1847,7 +1813,6 @@
             document.getElementById('corteTopProducto').textContent = topProducto;
             document.getElementById('corteTopCantidad').textContent = topCantidad;
 
-            // Detalle
             let detalle = `<div style="font-size:13px;">`;
             detalle += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;"><span>📅 Fecha</span><span>${hoy.toLocaleDateString('es')}</span></div>`;
             detalle += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;"><span>📋 Total Ventas</span><span><strong>$${total.toFixed(2)}</strong></span></div>`;
@@ -1862,7 +1827,6 @@
             detalle += `</div>`;
             document.getElementById('corteDetalle').innerHTML = detalle;
 
-            // Top 10
             let topHtml = '';
             if (topProductos.length === 0) {
                 topHtml = '<small style="color:#aaa;">No hay ventas registradas hoy</small>';
@@ -1892,9 +1856,10 @@
         }
 
         // ================================================================
-        // REINICIAR DÍA - CORREGIDO
+        // REINICIAR DÍA
         // ================================================================
         function reiniciarDia() {
+            console.log('🔍 Reiniciando día...');
             if (!confirm('⚠️ ¿Estás seguro de reiniciar el día? Esto archivará las ventas del día y pondrá en cero el conteo.')) return;
             
             const hoy = new Date();
@@ -1950,7 +1915,7 @@
         }
 
         // ================================================================
-        // HISTÓRICO DE VENTAS - CORREGIDO
+        // HISTÓRICO DE VENTAS
         // ================================================================
         function imprimirHistoricoVentas() {
             const historial = loadData('gaeto_historial_ventas', []);
@@ -2017,6 +1982,7 @@
         // ETIQUETAS - CORREGIDO
         // ================================================================
         function generarEtiqueta() {
+            console.log('🔍 Generando etiqueta...');
             const select = document.getElementById('etiquetaProductoSelect');
             const id = select.value;
             if (!id) { 
@@ -2050,6 +2016,7 @@
         }
 
         function imprimirEtiqueta() {
+            console.log('🔍 Imprimiendo etiqueta...');
             const etiqueta = document.getElementById('etiquetaParaImprimir');
             if (!etiqueta) { 
                 showToast('❌ Genera una etiqueta primero', 'error'); 
@@ -2087,6 +2054,7 @@
         // TICKETS
         // ================================================================
         function generarTicket(pedido) {
+            console.log('🔍 Generando ticket...');
             ticketPedidoActual = pedido;
             const body = document.getElementById('ticketBody');
             const estadoMap = { pendiente: '🟡 Pendiente', surtido: '🟢 Surtido', enruta: '🟣 En ruta', entregado: '✅ Entregado' };
@@ -2121,10 +2089,16 @@
                 <div style="font-size:12px;color:#999;">🙏 ¡Gracias por tu compra!</div>`;
             document.getElementById('ticketModal').classList.add('open');
             setTimeout(() => {
-                html2canvas(document.getElementById('ticketToRender'), { scale: 2, useCORS: true }).then(canvas => {
+                const elToRender = document.getElementById('ticketToRender');
+                if (!elToRender) return;
+                html2canvas(elToRender, { scale: 2, useCORS: true, allowTaint: true }).then(canvas => {
                     canvas.toBlob(function(blob) { ticketImagenBlob = blob; }, 'image/png');
                     const imgData = canvas.toDataURL('image/png');
-                    document.getElementById('ticketContent').dataset.imageData = imgData;
+                    const tc = document.getElementById('ticketContent');
+                    if (tc) tc.dataset.imageData = imgData;
+                }).catch(err => {
+                    console.error('Error en html2canvas:', err);
+                    showToast('⚠️ Error al generar imagen del ticket', 'error');
                 });
             }, 400);
         }
@@ -2514,25 +2488,21 @@
             </head><body>
             <h1>📦 Catálogo de Productos - GAETO POS</h1>
             <p style="text-align:center;">📅 ${new Date().toLocaleDateString('es')} | 📞 228 287 7441</p>
-            <p style="text-align:center;color:#888;font-size:13px;">🟢 Productos disponibles con stock</p>
+            <p style="text-align:center;color:#888;font-size:13px;">🟢 Productos disponibles</p>
             <div class="products-grid">`;
-            const productosConStock = products.filter(p => parseInt(p.stock) > 0);
-            if (productosConStock.length === 0) {
-                html += `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">📭 No hay productos disponibles con stock</div>`;
+            if (products.length === 0) {
+                html += `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">📭 No hay productos disponibles</div>`;
             } else {
-                productosConStock.forEach(p => {
+                products.forEach(p => {
                     const unidad = p.unidad || 'pza';
                     const promoTag = p.promocion ? '<span class="promo-tag">🔥 PROMO</span>' : '';
                     const codigoHtml = p.codigo ? `<div style="font-size:9px;color:#999;">🔲 ${p.codigo}</div>` : '';
-                    const stock = parseInt(p.stock) || 0;
-                    const stockText = stock <= 5 ? '⚠️ ¡Últimas unidades!' : '✅ Disponible';
                     html += `<div class="product-item">
                         <div class="name">${p.name}</div>
                         ${codigoHtml}
                         <div class="unidad">📏 ${unidad}</div>
                         <div class="price">$${p.price}</div>
                         ${promoTag}
-                        <div style="font-size:10px;color:#888;margin-top:4px;">${stockText} (${stock})</div>
                     </div>`;
                 });
             }
@@ -2630,6 +2600,8 @@
         // EVENTOS Y EVENT LISTENERS
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 GAETO POS - Iniciando...');
+            
             checkLicenseStatus();
             initData();
             renderCategories();
@@ -2699,7 +2671,7 @@
                 window._logoTimer = setTimeout(() => { logoClicks = 0; }, 3000);
                 if (logoClicks >= 5) {
                     logoClicks = 0;
-                    const pass = prompt('🔐 Contraseña de administrador:');
+                    const pass = prompt('🔐 Contraseña de administrador:')
                     if (pass === CONFIG.adminPassword) {
                         renderAdminProductList(''); renderAdminCategoryList(); renderOrderList(); renderClientHistory(''); 
                         updateCategorySelect(); updateProductSelect(); updateEtiquetaSelect(); renderCompras(); renderVentas(); cargarVentasDevolucion();
@@ -2726,15 +2698,13 @@
                 renderProducts(currentCategory, searchTerm); 
             });
 
-            // Scanner - CORREGIDO
+            // Scanner
             document.getElementById('scanBtn').addEventListener('click', function(e) {
                 e.preventDefault();
-                // Intentar abrir cámara nativa del celular
                 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                     iniciarScanner();
                 } else {
-                    // Fallback: input manual
-                    const codigo = prompt('📱 Ingresa el código del producto:');
+                    const codigo = prompt('📱 Ingresa el código del producto:')
                     if (codigo && codigo.trim()) {
                         procesarCodigoEscaneado(codigo.trim());
                     }
@@ -2748,11 +2718,10 @@
             document.getElementById('captureScannerBtn').addEventListener('click', function() {
                 const video = document.getElementById('scannerVideo');
                 if (video && video.srcObject) {
-                    showToast('📸 Buscando código en la imagen...', 'info', 2000);
+                    showToast('📸 Buscando código...', 'info', 2000);
                     leerCodigoDesdeVideo(video);
                 } else {
                     showToast('⚠️ La cámara no está activa', 'warning');
-                    // Intentar reiniciar la cámara
                     iniciarScanner();
                 }
             });
@@ -2791,7 +2760,7 @@
                 document.getElementById('prodImageFile').value = '';
             });
 
-            // ===== TICKETS =====
+            // ===== TICKETS Y CÁMARA (CORREGIDO PARA EVITAR CRASH) =====
             let cameraStream = null;
             function procesarFotoCapturada(canvas) {
                 let w = canvas.width, h = canvas.height;
@@ -2802,128 +2771,166 @@
                 const ctx = finalCanvas.getContext('2d');
                 ctx.drawImage(canvas, 0, 0, w, h);
                 selectedImageData = finalCanvas.toDataURL('image/jpeg', 0.5);
-                document.getElementById('imagePreview').src = selectedImageData;
-                document.getElementById('imagePreview').classList.add('show');
-                document.getElementById('removeImageBtn').classList.add('show');
+                const preview = document.getElementById('imagePreview');
+                if (preview) {
+                    preview.src = selectedImageData;
+                    preview.classList.add('show');
+                }
+                const removeBtn = document.getElementById('removeImageBtn');
+                if (removeBtn) removeBtn.classList.add('show');
             }
             function cerrarCamara() {
                 if (cameraStream) {
                     cameraStream.getTracks().forEach(track => track.stop());
                     cameraStream = null;
                 }
-                document.getElementById('cameraModal').classList.remove('open');
-                document.getElementById('cameraError').style.display = 'none';
-                document.getElementById('cameraVideo').style.display = '';
-                document.getElementById('capturePhotoBtn').style.display = '';
+                const camModal = document.getElementById('cameraModal');
+                if (camModal) camModal.classList.remove('open');
+                const errEl = document.getElementById('scannerError') || document.getElementById('cameraError');
+                if (errEl) errEl.style.display = 'none';
             }
-            document.getElementById('openCameraBtn').addEventListener('click', async function() {
-                document.getElementById('cameraModal').classList.add('open');
-                document.getElementById('cameraError').style.display = 'none';
-                document.getElementById('cameraVideo').style.display = '';
-                document.getElementById('capturePhotoBtn').style.display = '';
-                try {
-                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                    document.getElementById('cameraVideo').srcObject = cameraStream;
-                } catch (err) {
-                    document.getElementById('cameraVideo').style.display = 'none';
-                    document.getElementById('capturePhotoBtn').style.display = 'none';
-                    document.getElementById('cameraError').style.display = 'block';
-                    document.getElementById('cameraError').textContent = '⚠️ No se pudo acceder a la cámara. Verifica los permisos de tu navegador o dispositivo.';
-                }
-            });
-            document.getElementById('capturePhotoBtn').addEventListener('click', function() {
-                const video = document.getElementById('cameraVideo');
-                const canvas = document.getElementById('cameraCanvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                procesarFotoCapturada(canvas);
-                cerrarCamara();
-                showToast('📸 Foto capturada');
-            });
-            document.getElementById('cancelCameraBtn').addEventListener('click', cerrarCamara);
-
-            document.getElementById('ticketCloseBtn').addEventListener('click', () => document.getElementById('ticketModal').classList.remove('open'));
-
-            document.getElementById('ticketWhatsappBtn').addEventListener('click', async function() {
-                const pedido = ticketPedidoActual;
-                if (!pedido) return;
-                const imgData = document.getElementById('ticketContent').dataset.imageData;
-                if (!imgData) return;
-                try {
-                    const response = await fetch(imgData);
-                    const blob = await response.blob();
-                    const file = new File([blob], `ticket_${pedido.id}.png`, { type: 'image/png' });
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({
-                                text: `🛒 *${CONFIG.storeName}*\n🧾 Ticket de venta #${pedido.id.slice(-6)}\n💰 Total: $${pedido.total ? pedido.total.toFixed(2) : '0.00'}\n\n✅ ¡Gracias por su compra!\n🙏 Estamos para servirle\n📦 ${CONFIG.storeName} - Tu tienda de confianza`,
-                                files: [file]
-                            });
-                            return;
-                        } catch (err) {
-                            if (err.name === 'AbortError') return;
+            
+            // Listener para abrir cámara (validado para no romper el script)
+            const openCamBtn = document.getElementById('openCameraBtn');
+            if (openCamBtn) {
+                openCamBtn.addEventListener('click', async function() {
+                    const camModal = document.getElementById('cameraModal');
+                    if(camModal) camModal.classList.add('open');
+                    const errEl = document.getElementById('scannerError') || document.getElementById('cameraError');
+                    const vidEl = document.getElementById('scannerVideo') || document.getElementById('cameraVideo');
+                    if(errEl) errEl.style.display = 'none';
+                    if(vidEl) vidEl.style.display = '';
+                    try {
+                        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                        if(vidEl) vidEl.srcObject = cameraStream;
+                    } catch (err) {
+                        if(vidEl) vidEl.style.display = 'none';
+                        if(errEl) {
+                            errEl.style.display = 'block';
+                            errEl.textContent = '⚠️ No se pudo acceder a la cámara. Verifica los permisos de tu navegador o dispositivo.';
                         }
                     }
-                } catch(e) {
-                    console.error('Error preparando imagen:', e);
-                }
-                const link = document.createElement('a');
-                link.download = `ticket_${pedido.id}.png`;
-                link.href = imgData;
-                link.click();
-                showToast('📸 Imagen descargada. Adjúntala en WhatsApp.');
-                setTimeout(() => {
-                    const msg = `🛒 *${CONFIG.storeName}*\n🧾 Ticket de venta #${pedido.id.slice(-6)}\n💰 Total: $${pedido.total ? pedido.total.toFixed(2) : '0.00'}\n\n✅ ¡Gracias por su compra!\n🙏 Estamos para servirle\n📦 ${CONFIG.storeName} - Tu tienda de confianza`;
-                    window.open(`https://wa.me/${pedido.cliente?.phone || CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
-                }, 1500);
-            });
+                });
+            }
 
-            document.getElementById('ticketPrintBtn').addEventListener('click', function() {
-                const ticketEl = document.getElementById('ticketToRender');
-                if (ticketEl) {
-                    const ventana = window.open('', '_blank', 'width=400,height=600');
-                    ventana.document.write(`
-                        <!DOCTYPE html>
-                        <html>
-                        <head><title>Ticket GAETO</title>
-                        <style>
-                            body{margin:0;padding:20px;background:#f0f0f0;display:flex;justify-content:center;font-family:'Courier New',monospace;}
-                            .ticket{max-width:80mm;background:white;padding:15px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-                            .ticket .header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:8px;}
-                            .ticket .item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #ccc;font-size:12px;}
-                            .ticket .total{font-size:16px;font-weight:bold;text-align:right;border-top:2px solid #000;padding-top:5px;margin-top:5px;}
-                            .ticket .footer{text-align:center;font-size:10px;margin-top:8px;border-top:1px dashed #000;padding-top:5px;color:#888;}
-                            .ticket .cliente-info{font-size:11px;margin:5px 0;}
-                            @media print{body{background:white;padding:0;}.no-print{display:none;}}
-                        </style>
-                        </head>
-                        <body>
-                            ${ticketEl.outerHTML}
-                            <div class="no-print" style="text-align:center;margin-top:10px;">
-                                <button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button>
-                            </div>
-                        </body>
-                        </html>
-                    `);
-                    ventana.document.close();
-                }
-            });
+            // Listener para capturar foto (validado)
+            const photoBtn = document.getElementById('capturePhotoBtn') || document.getElementById('captureScannerBtn');
+            if (photoBtn && photoBtn.id === 'capturePhotoBtn') { // Solo si existe el específico de foto
+                photoBtn.addEventListener('click', function() {
+                    const video = document.getElementById('cameraVideo') || document.getElementById('scannerVideo');
+                    if(!video) return;
+                    const canvas = document.createElement('canvas'); // Crear canvas dinámicamente
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    procesarFotoCapturada(canvas);
+                    cerrarCamara();
+                    showToast('📸 Foto capturada');
+                });
+            }
 
-            document.getElementById('ticketDownloadBtn').addEventListener('click', function() {
-                const imgData = document.getElementById('ticketContent').dataset.imageData; if (!imgData) return;
-                const link = document.createElement('a'); link.download = `ticket_${ticketPedidoActual?.id || 'pedido'}.png`; link.href = imgData; link.click();
-            });
+            // Listener para cancelar cámara (validado)
+            const cancelCamBtn = document.getElementById('cancelCameraBtn') || document.getElementById('cancelScannerBtn');
+            if (cancelCamBtn && cancelCamBtn.id === 'cancelCameraBtn') {
+                cancelCamBtn.addEventListener('click', cerrarCamara);
+            }
+
+            // ===== LISTENERS DE LOS BOTONES DEL TICKET (AHORA SÍ SE EJECUTARÁN) =====
+            const ticketCloseBtn = document.getElementById('ticketCloseBtn');
+            if (ticketCloseBtn) {
+                ticketCloseBtn.addEventListener('click', () => document.getElementById('ticketModal').classList.remove('open'));
+            }
+
+            const ticketWhatsappBtn = document.getElementById('ticketWhatsappBtn');
+            if (ticketWhatsappBtn) {
+                ticketWhatsappBtn.addEventListener('click', async function() {
+                    const pedido = ticketPedidoActual;
+                    if (!pedido) return;
+                    const imgData = document.getElementById('ticketContent').dataset.imageData;
+                    if (!imgData) return;
+                    try {
+                        const response = await fetch(imgData);
+                        const blob = await response.blob();
+                        const file = new File([blob], `ticket_${pedido.id}.png`, { type: 'image/png' });
+                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    text: `🛒 *${CONFIG.storeName}*\n🧾 Ticket de venta #${pedido.id.slice(-6)}\n💰 Total: $${pedido.total ? pedido.total.toFixed(2) : '0.00'}\n\n✅ ¡Gracias por su compra!\n🙏 Estamos para servirle\n📦 ${CONFIG.storeName} - Tu tienda de confianza`,
+                                    files: [file]
+                                });
+                                return;
+                            } catch (err) {
+                                if (err.name === 'AbortError') return;
+                            }
+                        }
+                    } catch(e) {
+                        console.error('Error preparando imagen:', e);
+                    }
+                    const link = document.createElement('a');
+                    link.download = `ticket_${pedido.id}.png`;
+                    link.href = imgData;
+                    link.click();
+                    showToast('📸 Imagen descargada. Adjúntala en WhatsApp.');
+                    setTimeout(() => {
+                        const msg = `🛒 *${CONFIG.storeName}*\n🧾 Ticket de venta #${pedido.id.slice(-6)}\n💰 Total: $${pedido.total ? pedido.total.toFixed(2) : '0.00'}\n\n✅ ¡Gracias por su compra!\n🙏 Estamos para servirle\n📦 ${CONFIG.storeName} - Tu tienda de confianza`;
+                        window.open(`https://wa.me/${pedido.cliente?.phone || CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
+                    }, 1500);
+                });
+            }
+
+            const ticketPrintBtn = document.getElementById('ticketPrintBtn');
+            if (ticketPrintBtn) {
+                ticketPrintBtn.addEventListener('click', function() {
+                    const ticketEl = document.getElementById('ticketToRender');
+                    if (ticketEl) {
+                        const ventana = window.open('', '_blank', 'width=400,height=600');
+                        ventana.document.write(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head><title>Ticket GAETO</title>
+                            <style>
+                                body{margin:0;padding:20px;background:#f0f0f0;display:flex;justify-content:center;font-family:'Courier New',monospace;}
+                                .ticket{max-width:80mm;background:white;padding:15px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+                                .ticket .header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:8px;}
+                                .ticket .item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #ccc;font-size:12px;}
+                                .ticket .total{font-size:16px;font-weight:bold;text-align:right;border-top:2px solid #000;padding-top:5px;margin-top:5px;}
+                                .ticket .footer{text-align:center;font-size:10px;margin-top:8px;border-top:1px dashed #000;padding-top:5px;color:#888;}
+                                .ticket .cliente-info{font-size:11px;margin:5px 0;}
+                                @media print{body{background:white;padding:0;}.no-print{display:none;}}
+                            </style>
+                            </head>
+                            <body>
+                                ${ticketEl.outerHTML}
+                                <div class="no-print" style="text-align:center;margin-top:10px;">
+                                    <button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button>
+                                </div>
+                            </body>
+                            </html>
+                        `);
+                        ventana.document.close();
+                    }
+                });
+            }
+
+            const ticketDownloadBtn = document.getElementById('ticketDownloadBtn');
+            if (ticketDownloadBtn) {
+                ticketDownloadBtn.addEventListener('click', function() {
+                    const imgData = document.getElementById('ticketContent').dataset.imageData; if (!imgData) return;
+                    const link = document.createElement('a'); link.download = `ticket_${ticketPedidoActual?.id || 'pedido'}.png`; link.href = imgData; link.click();
+                });
+            }
 
             // Share
-            document.getElementById('shareBtn').addEventListener('click', () => {
+            document.getElementById('shareBtn').addEventListener('click', function() {
                 const msg = `🛒 *${CONFIG.storeName}*\n━━━━━━━━━━━━━━━\n📍 Punto de Venta · Servicio a domicilio\n📞 Pedidos: ${CONFIG.whatsappNumber}\n━━━━━━━━━━━━━━━\n✅ ¡Gracias por su preferencia!\n🙏 Estamos para servirle\n📦 ${CONFIG.storeName} - Tu tienda de confianza\n\n👇 Haz tu pedido aquí:\n${CONFIG.storeUrl}`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
             });
 
             // Print catalog
-            document.getElementById('printCatalogBtn').addEventListener('click', imprimirCatalogo);
+            document.getElementById('printCatalogBtn').addEventListener('click', function() {
+                imprimirCatalogo();
+            });
 
             // Categories
             document.getElementById('categoriesContainer').addEventListener('click', function(e) {
@@ -2992,10 +2999,12 @@
             // CORTE DE CAJA - BOTONES CORREGIDOS
             // ================================================================
             document.getElementById('btnCorteCaja').addEventListener('click', function() {
+                console.log('🔍 Botón Calcular Corte presionado');
                 calcularCorte();
             });
             
             document.getElementById('btnImprimirCorte').addEventListener('click', function() {
+                console.log('🔍 Botón Imprimir Corte presionado');
                 const contenido = document.getElementById('corteDetalle').innerHTML;
                 const total = document.getElementById('corteTotal').textContent;
                 const topContainer = document.getElementById('topProductosContainer').innerHTML;
@@ -3035,8 +3044,8 @@
                 ventana.document.close();
             });
 
-            // Reiniciar día
             document.getElementById('btnReiniciarDia').addEventListener('click', function() {
+                console.log('🔍 Botón Reiniciar Día presionado');
                 reiniciarDia();
             });
 
@@ -3044,9 +3053,11 @@
             // ETIQUETAS - BOTONES CORREGIDOS
             // ================================================================
             document.getElementById('btnGenerarEtiqueta').addEventListener('click', function() {
+                console.log('🔍 Botón Generar Etiqueta presionado');
                 generarEtiqueta();
             });
             document.getElementById('btnImprimirEtiqueta').addEventListener('click', function() {
+                console.log('🔍 Botón Imprimir Etiqueta presionado');
                 imprimirEtiqueta();
             });
 
@@ -3074,6 +3085,8 @@
 
             // Actualizar resumen en tiempo real
             document.addEventListener('cartUpdated', actualizarResumenVenta);
+            
+            console.log('✅ GAETO POS - Inicialización completada');
         });
     </script>
 </body>
