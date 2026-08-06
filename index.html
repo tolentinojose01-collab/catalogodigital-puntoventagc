@@ -7,6 +7,7 @@
     <meta property="og:image" content="https://i.postimg.cc/g0czCnqL/GAETO-COMERCIOS-LOGO.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
@@ -214,13 +215,14 @@
         .camera-modal .camera-controls button{border:none;border-radius:50px;padding:14px 26px;font-size:16px;font-weight:700;cursor:pointer}
         .camera-modal .btn-capture{background:#22c55e;color:#fff}
         .camera-modal .btn-cancel-camera{background:#555;color:#fff}
-        .devolucion-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;font-size:13px;align-items:center}
-        .devolucion-item .dev-cantidad{display:flex;gap:6px;align-items:center}
-        .devolucion-item .dev-cantidad input{width:50px;padding:4px;border-radius:6px;border:1px solid #ddd;text-align:center}
-        .etiqueta-print{font-family:'Courier New',monospace;font-size:12px;text-align:center;padding:8px;border:1px dashed #999;width:200px;margin:5px auto}
-        .etiqueta-print .etiqueta-nombre{font-size:14px;font-weight:700;color:#1e3a8a}
-        .etiqueta-print .etiqueta-codigo{font-size:11px;color:#666}
-        .etiqueta-print .etiqueta-precio{font-size:13px;color:#e63946;font-weight:700}
+        .devolucion-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:13px;align-items:center}
+        .devolucion-item .dev-cantidad{display:flex;gap:6px;align-items:center;flex-direction:column}
+        .devolucion-item .dev-cantidad input{width:60px;padding:5px;border-radius:6px;border:1px solid #ddd;text-align:center}
+        .etiqueta-print{font-family:'Courier New',monospace;text-align:center;padding:5px;border:1px dashed #999;width:38mm;margin:5px auto;display:flex;flex-direction:column;align-items:center}
+        .etiqueta-print .etiqueta-nombre{font-size:11px;font-weight:700;color:#1e3a8a;width:100%;line-height:1.1;margin-bottom:2px}
+        .etiqueta-print .etiqueta-codigo{font-size:8px;color:#666;width:100%}
+        .etiqueta-print .etiqueta-precio{font-size:14px;color:#e63946;font-weight:700;width:100%}
+        .etiqueta-print svg{max-width:34mm;width:100%;height:8mm}
         #suspensionScreen{display:none;position:fixed;inset:0;background:#1a1a1a;z-index:99999;justify-content:center;align-items:center;padding:20px;color:#fff}
         .suspension-card{background:#2d2a24;border:2px solid #1e3a8a;border-radius:20px;padding:30px;max-width:400px;width:100%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
         .suspension-card h2{color:#1e3a8a;font-size:22px;margin-bottom:15px}
@@ -448,6 +450,7 @@
                 
                 <div class="admin-tabs">
                     <button class="active" data-tab="tabProductos">📦 Productos</button>
+                    <button data-tab="tabInventario">📋 Inventario</button>
                     <button data-tab="tabPedidos">📋 Pedidos</button>
                     <button data-tab="tabClientes">👥 Clientes</button>
                     <button data-tab="tabCompras">🛒 Compras</button>
@@ -461,7 +464,7 @@
                 <!-- TAB PRODUCTOS -->
                 <div class="admin-tab-content active" id="tabProductos">
                     <div class="admin-actions-bar">
-                        <button class="print-btn-sm" onclick="imprimirProductos()"><i class="fas fa-print"></i> Imprimir</button>
+                        <button class="print-btn-sm" onclick="imprimirProductos()"><i class="fas fa-print"></i> Imprimir Lista Precios</button>
                     </div>
                     <h3 class="section-title">➕ Agregar / Editar producto</h3>
                     <input type="hidden" id="prodId" />
@@ -497,6 +500,27 @@
                     <div class="product-list-admin" id="adminProductList"><small>Productos guardados:</small></div>
                 </div>
 
+                <!-- TAB INVENTARIO (NUEVO) -->
+                <div class="admin-tab-content" id="tabInventario">
+                    <div class="admin-actions-bar">
+                        <button class="print-btn-sm" onclick="imprimirInventario()"><i class="fas fa-print"></i> Imprimir Inventario 80mm</button>
+                    </div>
+                    <h3 class="section-title">📋 Inventario Actual y Valoración</h3>
+                    <div class="pos-corte-stats" style="grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+                        <div class="stat">
+                            <div class="num" id="invTotalArticulos">0</div>
+                            <div class="label">📦 Total Artículos</div>
+                        </div>
+                        <div class="stat">
+                            <div class="num" id="invValorTotal">$0</div>
+                            <div class="label">💰 Valor Inventario</div>
+                        </div>
+                    </div>
+                    <div id="inventarioListContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; padding: 8px;">
+                        <small>Cargando inventario...</small>
+                    </div>
+                </div>
+
                 <!-- TAB PEDIDOS -->
                 <div class="admin-tab-content" id="tabPedidos">
                     <div class="admin-actions-bar">
@@ -509,7 +533,7 @@
                 <!-- TAB CLIENTES -->
                 <div class="admin-tab-content" id="tabClientes">
                     <div class="admin-actions-bar">
-                        <button class="print-btn-sm" onclick="imprimirClientes()"><i class="fas fa-print"></i> Imprimir</button>
+                        <button class="print-btn-sm" onclick="imprimirClientes()"><i class="fas fa-print"></i> Imprimir Clientes</button>
                     </div>
                     <h3 class="section-title">👥 Clientes</h3>
                     <div class="admin-client-search"><i class="fas fa-search admin-search-icon"></i><input type="text" id="adminClientSearchInput" placeholder="Buscar cliente por nombre o teléfono..." /></div>
@@ -563,10 +587,10 @@
                 <!-- TAB VENTAS -->
                 <div class="admin-tab-content" id="tabVentas">
                     <div class="admin-actions-bar">
-                        <button class="print-btn-sm" onclick="imprimirVentas()"><i class="fas fa-print"></i> Imprimir</button>
-                        <button class="print-btn-sm" onclick="imprimirHistoricoVentas()"><i class="fas fa-history"></i> Histórico</button>
+                        <button class="print-btn-sm" onclick="imprimirVentas()"><i class="fas fa-print"></i> Imprimir Hoy</button>
+                        <button class="print-btn-sm" onclick="imprimirHistoricoVentas()"><i class="fas fa-history"></i> Imprimir Histórico</button>
                     </div>
-                    <h3 class="section-title">📊 Reporte de Ventas</h3>
+                    <h3 class="section-title">📊 Reporte de Ventas del Día</h3>
                     <div class="ventas-stats" id="ventasStats" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
                         <div class="stat"><div class="num" id="ventasTotal">$0</div><div class="label">💰 Total Ventas</div></div>
                         <div class="stat"><div class="num" id="ventasUtilidad">$0</div><div class="label">📈 Utilidad</div></div>
@@ -575,6 +599,21 @@
                     </div>
                     <div id="ventasHistorial" style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:8px;">
                         <small style="color:#aaa;">Sin ventas registradas</small>
+                    </div>
+
+                    <h3 class="section-title" style="margin-top:20px;">📅 Histórico por Rango de Fechas</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:10px;">
+                        <div><label>Fecha Inicio</label><input type="date" id="histFechaInicio" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;"></div>
+                        <div><label>Fecha Fin</label><input type="date" id="histFechaFin" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;"></div>
+                        <div style="display:flex;align-items:flex-end;"><button class="btn-save" onclick="calcularHistorico()" style="padding:8px 16px;font-size:13px;margin:0;">Calcular</button></div>
+                    </div>
+                    <div class="pos-corte-stats" id="histStats" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px;">
+                        <div class="stat"><div class="num" id="histTotalVentas">$0</div><div class="label">💰 Total Ventas</div></div>
+                        <div class="stat"><div class="num" id="histUtilidad">$0</div><div class="label">📈 Utilidad</div></div>
+                        <div class="stat"><div class="num" id="histCompras">$0</div><div class="label">🛒 Compras</div></div>
+                        <div class="stat"><div class="num" id="histTicketProm">$0</div><div class="label">🎫 Ticket Prom</div></div>
+                        <div class="stat"><div class="num" id="histClientes">0</div><div class="label">👥 Tráfico</div></div>
+                        <div class="stat"><div class="num" id="histMermas">$0</div><div class="label">📦 Mermas</div></div>
                     </div>
                 </div>
 
@@ -614,19 +653,41 @@
                     </div>
                 </div>
 
-                <!-- TAB DEVOLUCIONES -->
+                <!-- TAB DEVOLUCIONES Y MERMAS -->
                 <div class="admin-tab-content" id="tabDevoluciones">
-                    <h3 class="section-title">🔄 Devoluciones</h3>
+                    <h3 class="section-title">🔄 Devoluciones de Ventas</h3>
                     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
                         <div style="flex:1;min-width:150px;">
                             <select id="devolucionVentaSelect" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:13px;">
                                 <option value="">Seleccionar venta...</option>
                             </select>
                         </div>
-                        <button class="btn-save" id="btnCargarDevolucion" style="flex:0 0 auto;padding:8px 16px;font-size:13px;">🔍 Cargar</button>
+                        <button class="btn-save" id="btnCargarDevolucion" style="flex:0 0 auto;padding:8px 16px;font-size:13px;">🔍 Cargar Ticket</button>
                     </div>
                     <div id="devolucionContainer">
                         <div style="text-align:center;color:#888;padding:20px;">Selecciona una venta para procesar devolución</div>
+                    </div>
+
+                    <h3 class="section-title" style="margin-top:30px;">🗑️ Registro de Mermas (Pérdidas)</h3>
+                    <div style="background:#fff7f7;padding:12px;border-radius:8px;border:1px solid #e74c3c;margin-bottom:10px;">
+                        <div class="row" style="margin-bottom:10px;">
+                            <div class="form-group" style="margin:0">
+                                <label>Producto</label>
+                                <select id="mermaProductoSelect" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:13px;"></select>
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label>Cantidad Perdida</label>
+                                <input type="number" id="mermaCantidad" value="1" min="1" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:10px;">
+                            <label>Motivo (Caducidad, Robo, Rotura, etc.)</label>
+                            <input type="text" id="mermaMotivo" placeholder="Motivo de la merma" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">
+                        </div>
+                        <button class="btn-save btn-danger" onclick="registrarMerma()" style="width:100%;margin-top:0;">🗑️ Registrar Merma</button>
+                    </div>
+                    <div id="mermasListContainer" style="max-height:200px;overflow-y:auto;border:1px solid #eee;padding:8px;border-radius:8px;">
+                        <small style="color:#aaa;">Sin mermas registradas</small>
                     </div>
                 </div>
 
@@ -639,7 +700,7 @@
 
                 <!-- TAB ETIQUETAS -->
                 <div class="admin-tab-content" id="tabEtiquetas">
-                    <h3 class="section-title">🏷️ Generador de Etiquetas</h3>
+                    <h3 class="section-title">🏷️ Generador de Etiquetas (Tamaño Anaquel 40x25mm)</h3>
                     <div class="form-group">
                         <label>Seleccionar producto</label>
                         <select id="etiquetaProductoSelect" style="width:100%;padding:10px;border-radius:12px;border:1px solid #ddd;font-size:14px;">
@@ -648,7 +709,6 @@
                     </div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
                         <button class="btn-save" id="btnGenerarEtiqueta" style="flex:1;padding:10px;font-size:13px;">🖨️ Generar Etiqueta</button>
-                        <button class="btn-secondary" id="btnImprimirEtiqueta" style="flex:1;padding:10px;font-size:13px;"><i class="fas fa-print"></i> Imprimir</button>
                     </div>
                     <div id="etiquetaPreview" style="border:1px dashed #ddd;border-radius:12px;padding:15px;text-align:center;min-height:150px;background:#fafafa;">
                         <span style="color:#aaa;">Selecciona un producto y genera su etiqueta</span>
@@ -660,7 +720,7 @@
                 <button class="btn-save btn-secondary" id="resetCategoriesBtn" onclick="resetCategories()">🔄 Restaurar categorías por defecto</button>
                 <button class="btn-save btn-danger" id="clearOrdersBtn" onclick="eliminarTodosPedidos()" style="background:#e67e22;">🗑️ Eliminar todos los pedidos</button>
 
-                <div class="help-text"><strong>📌 Acceso:</strong> 5 clics en el logo · Contraseña: <strong>admin123</strong><br /><strong>📸 Imágenes:</strong> Puedes subir fotos desde tu PC o celular al agregar o editar un producto.<br /><strong>🔄 Sincronización:</strong> Los datos se guardan automáticamente en la nube.<br /><strong>📦 Inventario:</strong> Cada producto tiene stock. Se descuenta al hacer pedidos y se actualiza con compras.<br /><strong>📏 Unidades:</strong> pza, kg, ml, m3, jgo, lt, gr, doc, paq, caja, bolsa.<br /><strong>🖨️ Impresión:</strong> Botón de imprimir en cada módulo.<br /><strong>💰 POS:</strong> Métodos de pago: Efectivo, Tarjeta, Transferencia, Crédito · Cambio automático.<br /><strong>📱 Escáner:</strong> Usa la cámara para leer códigos de barras.<br /><strong>🏷️ SKU:</strong> Generador automático de códigos SKU.<br /><strong>🏷️ Etiquetas:</strong> Imprime etiquetas con nombre y código del producto.<br /><strong>📊 Corte:</strong> Ticket promedio, tráfico de clientes, utilidad, compras del día, mermas.</div>
+                <div class="help-text"><strong>📌 Acceso:</strong> 5 clics en el logo · Contraseña: <strong>admin123</strong><br /><strong>📸 Imágenes:</strong> Puedes subir fotos desde tu PC o celular al agregar o editar un producto.<br /><strong>🔄 Sincronización:</strong> Los datos se guardan automáticamente en la nube.<br /><strong>📦 Inventario:</strong> Módulo de inventario y valoración disponible.<br /><strong>📏 Unidades:</strong> pza, kg, ml, m3, jgo, lt, gr, doc, paq, caja, bolsa.<br /><strong>🖨️ Impresión:</strong> Formato térmico 80mm optimizado.<br /><strong>💰 POS:</strong> Métodos de pago: Efectivo, Tarjeta, Transferencia, Crédito · Cambio automático.<br /><strong>📱 Escáner:</strong> Usa la cámara para leer códigos de barras.<br /><strong>🏷️ SKU:</strong> Generador automático de códigos SKU.<br /><strong>🏷️ Etiquetas:</strong> Imprime etiquetas con nombre, código de barras y precio.<br /><strong>📊 Histórico:</strong> Reportes por rango de fechas en pestaña Ventas.</div>
             </div>
         </div>
     </div>
@@ -702,6 +762,7 @@
         let compras = [];
         let ventas = [];
         let cotizaciones = [];
+        let mermas = []; 
         let selectedImageData = null;
         let ticketImagenBlob = null;
         let ticketPedidoActual = null;
@@ -737,7 +798,7 @@
             try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
             if (key === 'gaeto_productos' || key === 'gaeto_categorias' || key === 'gaeto_pedidos' || 
                 key === 'gaeto_clientes' || key === 'gaeto_compras' || key === 'gaeto_ventas' ||
-                key === 'gaeto_cotizaciones') {
+                key === 'gaeto_cotizaciones' || key === 'gaeto_mermas') {
                 clearTimeout(window._syncTimeout);
                 window._syncTimeout = setTimeout(sincronizarDatos, 1000);
             }
@@ -776,7 +837,7 @@
 
             const now = new Date().toISOString();
             const dataToSync = {
-                products, categories, pedidos, clientes, compras, ventas, cotizaciones,
+                products, categories, pedidos, clientes, compras, ventas, cotizaciones, mermas,
                 ultimoCorte: localStorage.getItem('gaeto_ultimo_corte') || null,
                 lastUpdated: now
             };
@@ -817,6 +878,7 @@
                     if(cloudData.compras) compras = cloudData.compras;
                     if(cloudData.ventas) ventas = cloudData.ventas;
                     if(cloudData.cotizaciones) cotizaciones = cloudData.cotizaciones;
+                    if(cloudData.mermas) mermas = cloudData.mermas;
                     if(cloudData.ultimoCorte) localStorage.setItem('gaeto_ultimo_corte', cloudData.ultimoCorte);
 
                     let max = 0; products.forEach(p => { if (p.id > max) max = p.id; }); nextId = max + 1;
@@ -827,9 +889,10 @@
                     localStorage.setItem('gaeto_compras', JSON.stringify(compras));
                     localStorage.setItem('gaeto_ventas', JSON.stringify(ventas));
                     localStorage.setItem('gaeto_cotizaciones', JSON.stringify(cotizaciones));
+                    localStorage.setItem('gaeto_mermas', JSON.stringify(mermas));
                     localStorage.setItem('gaeto_comercios_last_sync', new Date(cloudLastUpdated).toISOString());
 
-                    renderCategories(); renderProducts('todos', ''); updateCategorySelect(); updateProductSelect(); updateEtiquetaSelect();
+                    renderCategories(); renderProducts('todos', ''); updateCategorySelect(); updateProductSelect(); updateEtiquetaSelect(); updateMermaSelect(); renderMermas();
                     if (document.getElementById('adminModal').classList.contains('open')) {
                         renderAdminProductList(''); renderAdminCategoryList(); renderOrderList(); renderClientHistory(''); renderCompras(); renderVentas();
                     }
@@ -864,6 +927,7 @@
             compras = loadData('gaeto_compras', []); if (!Array.isArray(compras)) compras = [];
             ventas = loadData('gaeto_ventas', []); if (!Array.isArray(ventas)) ventas = [];
             cotizaciones = loadData('gaeto_cotizaciones', []); if (!Array.isArray(cotizaciones)) cotizaciones = [];
+            mermas = loadData('gaeto_mermas', []); if (!Array.isArray(mermas)) mermas = [];
         }
 
         // ================================================================
@@ -888,7 +952,7 @@
         }
 
         // ================================================================
-        // RENDERIZADO PRINCIPAL - CATÁLOGO SIN STOCK
+        // RENDERIZADO PRINCIPAL - CATÁLOGO
         // ================================================================
         function renderCategories() {
             const container = document.getElementById('categoriesContainer');
@@ -908,17 +972,13 @@
             });
         }
 
-        // 🔥 FUNCIÓN RENDER PRODUCTOS - SIN INDICADORES DE STOCK
         function renderProducts(category, search = '') {
             const container = document.getElementById('productsContainer');
             let filtered = products;
             if (category !== 'todos') filtered = filtered.filter(p => p.category === category);
             if (search.trim()) {
                 const term = search.toLowerCase().trim();
-                filtered = filtered.filter(p => 
-                    p.name.toLowerCase().includes(term) ||
-                    (p.codigo && p.codigo.toLowerCase().includes(term))
-                );
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(term) || (p.codigo && p.codigo.toLowerCase().includes(term)));
             }
             if (!filtered || filtered.length === 0) {
                 container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">📭 No hay productos disponibles</div>`;
@@ -932,8 +992,6 @@
                 const unidad = p.unidad || 'pza';
                 const unidadLabel = {pza:'🧩',kg:'⚖️',ml:'🧪',m3:'📐',jgo:'🔄',lt:'🫗',gr:'⚖️',doc:'📦',paq:'📦',caja:'📦',bolsa:'🛍️'}[unidad] || '📦';
                 const codigoHtml = p.codigo ? `<div class="codigo-tag">🔲 ${p.codigo}</div>` : '';
-                
-                // 🔥 SIN INDICADORES DE STOCK - SIEMPRE BOTÓN AGREGAR
                 return `<div class="product-card ${promoClass}">${promoHtml}${imageHtml}<div class="name">${p.name}</div>${codigoHtml}<div class="unidad-tag">${unidadLabel} ${unidad}</div><div class="price">$${p.price}</div><button class="add-btn" onclick="addToCart(${p.id})">➕ Agregar</button></div>`;
             }).join('');
         }
@@ -953,8 +1011,7 @@
                 totalEl.textContent = 'Total: $0'; return;
             }
             container.innerHTML = cart.map(item => {
-                return `
-                <div class="cart-item">
+                return `<div class="cart-item">
                     <div class="item-info"><div class="item-name">${item.name}</div><div class="item-price">$${item.price} c/u</div></div>
                     <div class="qty-control">
                         <button class="qty-minus" onclick="removeFromCart(${item.id})">−</button>
@@ -969,16 +1026,12 @@
             totalEl.textContent = `Total: $${total}`;
         }
 
-        // 🔥 ADD TO CART - SIN VALIDACIÓN DE STOCK
         function addToCart(id) {
             const product = products.find(p => p.id === id);
             if (!product) return;
             const item = cart.find(i => i.id === id);
-            if (item) {
-                item.qty++;
-            } else {
-                cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
-            }
+            if (item) item.qty++;
+            else cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
             saveData('gaeto_carrito', cart);
             updateCartUI(); renderCartModal();
             showToast(`✅ ${product.name} agregado`);
@@ -1000,9 +1053,6 @@
             updateCartUI(); renderCartModal();
         }
 
-        // ================================================================
-        // SKU GENERATOR
-        // ================================================================
         function generarSKU() {
             const nombre = document.getElementById('prodName').value.trim();
             const categoria = document.getElementById('prodCategorySelect').value || 'GEN';
@@ -1014,39 +1064,28 @@
             showToast(`✅ SKU generado: ${sku}`);
         }
 
-        // ================================================================
-        // ESCÁNER DE CÓDIGOS DE BARRAS
-        // ================================================================
         function iniciarScanner() {
             const modal = document.getElementById('cameraModal');
             modal.classList.add('open');
-            
             const video = document.getElementById('scannerVideo');
             const errorEl = document.getElementById('scannerError');
             errorEl.style.display = 'none';
             scannerActive = true;
-            
             if (scannerStream) {
                 scannerStream.getTracks().forEach(track => track.stop());
                 scannerStream = null;
             }
-            
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' },
-                    audio: false
-                })
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
                 .then(function(stream) {
                     scannerStream = stream;
                     video.srcObject = stream;
                     video.setAttribute('playsinline', '');
                     video.play();
-                    
                     if (window._scannerInterval) clearInterval(window._scannerInterval);
                     window._scannerInterval = setInterval(function() {
                         if (!scannerActive || !document.getElementById('cameraModal').classList.contains('open')) {
-                            clearInterval(window._scannerInterval);
-                            return;
+                            clearInterval(window._scannerInterval); return;
                         }
                         leerCodigoDesdeVideo(video);
                     }, 1500);
@@ -1066,106 +1105,68 @@
         function leerCodigoDesdeVideo(video) {
             try {
                 const canvas = document.createElement('canvas');
-                canvas.width = 640;
-                canvas.height = 480;
+                canvas.width = 640; canvas.height = 480;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
                 if ('BarcodeDetector' in window) {
-                    const detector = new BarcodeDetector({ 
-                        formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39', 'codabar', 'itf', 'qr_code', 'data_matrix'] 
-                    });
+                    const detector = new BarcodeDetector({ formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39', 'codabar', 'itf', 'qr_code', 'data_matrix'] });
                     detector.detect(canvas)
                         .then(barcodes => {
                             barcodes.forEach(barcode => {
                                 const codigo = barcode.rawValue;
-                                if (codigo) {
-                                    detenerScanner();
-                                    procesarCodigoEscaneado(codigo);
-                                }
+                                if (codigo) { detenerScanner(); procesarCodigoEscaneado(codigo); }
                             });
-                        })
-                        .catch(() => {});
+                        }).catch(() => {});
                 }
-            } catch(e) {
-                console.log('Error al leer código:', e);
-            }
+            } catch(e) { console.log('Error al leer código:', e); }
         }
 
         function detenerScanner() {
             scannerActive = false;
-            if (window._scannerInterval) {
-                clearInterval(window._scannerInterval);
-                window._scannerInterval = null;
-            }
-            if (scannerStream) {
-                scannerStream.getTracks().forEach(track => track.stop());
-                scannerStream = null;
-            }
+            if (window._scannerInterval) { clearInterval(window._scannerInterval); window._scannerInterval = null; }
+            if (scannerStream) { scannerStream.getTracks().forEach(track => track.stop()); scannerStream = null; }
             document.getElementById('cameraModal').classList.remove('open');
             document.getElementById('scannerError').style.display = 'none';
-            const video = document.getElementById('scannerVideo');
-            video.srcObject = null;
+            document.getElementById('scannerVideo').srcObject = null;
         }
 
         function procesarCodigoEscaneado(codigo) {
             let producto = products.find(p => p.codigo === codigo);
-            if (producto) {
-                addToCart(producto.id);
-                showToast(`✅ ${producto.name} agregado (${codigo})`);
-                return;
-            }
+            if (producto) { addToCart(producto.id); showToast(`✅ ${producto.name} agregado (${codigo})`); return; }
             const parcial = products.filter(p => p.codigo && p.codigo.includes(codigo));
             if (parcial.length === 1) {
-                producto = parcial[0];
-                addToCart(producto.id);
-                showToast(`✅ ${producto.name} agregado (${codigo})`);
-                return;
+                addToCart(parcial[0].id);
+                showToast(`✅ ${parcial[0].name} agregado (${codigo})`); return;
             } else if (parcial.length > 1) {
-                const msg = parcial.map(p => `${p.name} (${p.codigo})`).join('\n');
-                showModal('📋 Productos encontrados', 
-                    `<div style="font-size:13px;">Coincidencias para "${codigo}":<br>${msg}</div>`,
-                    'Cerrar', function(){}
-                );
+                showModal('📋 Productos encontrados', `<div style="font-size:13px;">Coincidencias para "${codigo}":<br>${parcial.map(p => `${p.name} (${p.codigo})`).join('<br>')}</div>`, 'Cerrar', function(){});
                 return;
             }
             showToast(`⚠️ Producto no encontrado: ${codigo}`, 'warning');
         }
 
-        // ================================================================
-        // ADMINISTRACIÓN
-        // ================================================================
         function updateCategorySelect() {
             const select = document.getElementById('prodCategorySelect');
             select.innerHTML = '<option value="Sin categoría">📂 Sin categoría</option>';
-            categories.forEach(c => {
-                const o = document.createElement('option');
-                o.value = c.name; o.textContent = c.name;
-                select.appendChild(o);
-            });
+            categories.forEach(c => { const o = document.createElement('option'); o.value = c.name; o.textContent = c.name; select.appendChild(o); });
         }
 
         function updateProductSelect() {
             const select = document.getElementById('compraProductoSelect');
             select.innerHTML = '<option value="">Seleccionar...</option>';
-            products.forEach(p => {
-                const o = document.createElement('option');
-                o.value = p.id;
-                const unidad = p.unidad || 'pza';
-                o.textContent = `${p.name} (Stock: ${p.stock || 0} ${unidad})`;
-                select.appendChild(o);
-            });
+            products.forEach(p => { const o = document.createElement('option'); o.value = p.id; const unidad = p.unidad || 'pza'; o.textContent = `${p.name} (Stock: ${p.stock || 0} ${unidad})`; select.appendChild(o); });
         }
 
         function updateEtiquetaSelect() {
             const select = document.getElementById('etiquetaProductoSelect');
             select.innerHTML = '<option value="">Seleccionar...</option>';
-            products.forEach(p => {
-                const o = document.createElement('option');
-                o.value = p.id;
-                o.textContent = `${p.name} ${p.codigo ? '- ' + p.codigo : ''}`;
-                select.appendChild(o);
-            });
+            products.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.name} ${p.codigo ? '- ' + p.codigo : ''}`; select.appendChild(o); });
+        }
+
+        function updateMermaSelect() {
+            const select = document.getElementById('mermaProductoSelect');
+            if(!select) return;
+            select.innerHTML = '<option value="">Seleccionar...</option>';
+            products.forEach(p => { const o = document.createElement('option'); o.value = p.id; const unidad = p.unidad || 'pza'; o.textContent = `${p.name} (Stock: ${p.stock || 0} ${unidad})`; select.appendChild(o); });
         }
 
         function procesarProducto() {
@@ -1185,7 +1186,7 @@
             if (!name || isNaN(price)) { showToast('⚠️ Completa nombre y precio'); return; }
             products.push({ id: nextId++, name, price, category, image, promocion, stock, costo, unidad, codigo });
             saveData('gaeto_productos', products);
-            renderProducts(currentCategory, searchTerm); renderCategories(); renderAdminProductList(''); updateProductSelect(); updateEtiquetaSelect();
+            renderProducts(currentCategory, searchTerm); renderCategories(); renderAdminProductList(''); updateProductSelect(); updateEtiquetaSelect(); updateMermaSelect();
             document.getElementById('prodName').value = ''; document.getElementById('prodPrice').value = '';
             document.getElementById('prodStock').value = '10'; document.getElementById('prodCosto').value = '';
             document.getElementById('prodCodigo').value = '';
@@ -1213,8 +1214,7 @@
                 document.getElementById('imagePreview').classList.add('show');
                 document.getElementById('removeImageBtn').classList.add('show');
             }
-            const btn = document.getElementById('addProductBtn');
-            btn.innerHTML = '💾 Guardar Cambios';
+            document.getElementById('addProductBtn').innerHTML = '💾 Guardar Cambios';
             document.getElementById('prodName').focus();
         }
 
@@ -1231,7 +1231,7 @@
             p.image = selectedImageData || '';
             if (!p.name || isNaN(p.price)) { showToast('⚠️ Completa nombre y precio'); return; }
             saveData('gaeto_productos', products);
-            renderProducts(currentCategory, searchTerm); renderCategories(); renderAdminProductList(''); updateProductSelect(); updateEtiquetaSelect();
+            renderProducts(currentCategory, searchTerm); renderCategories(); renderAdminProductList(''); updateProductSelect(); updateEtiquetaSelect(); updateMermaSelect();
             editingProdId = null;
             document.getElementById('prodName').value = ''; document.getElementById('prodPrice').value = '';
             document.getElementById('prodStock').value = '10'; document.getElementById('prodCosto').value = '';
@@ -1240,8 +1240,7 @@
             document.getElementById('imagePreview').classList.remove('show');
             document.getElementById('removeImageBtn').classList.remove('show');
             document.getElementById('prodPromocion').checked = false;
-            const btn = document.getElementById('addProductBtn');
-            btn.innerHTML = '✅ Agregar producto';
+            document.getElementById('addProductBtn').innerHTML = '✅ Agregar producto';
             showToast('✅ Producto actualizado');
         }
 
@@ -1249,7 +1248,7 @@
             if (!confirm('¿Eliminar este producto?')) return;
             products = products.filter(p => p.id !== id);
             saveData('gaeto_productos', products);
-            renderProducts(currentCategory, searchTerm); renderAdminProductList(''); renderCategories(); updateProductSelect(); updateEtiquetaSelect();
+            renderProducts(currentCategory, searchTerm); renderAdminProductList(''); renderCategories(); updateProductSelect(); updateEtiquetaSelect(); updateMermaSelect();
             showToast('🗑️ Producto eliminado');
         }
 
@@ -1267,7 +1266,7 @@
             if (confirm('¿Restaurar productos por defecto?')) {
                 products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
                 saveData('gaeto_productos', products);
-                renderProducts(currentCategory, searchTerm); renderAdminProductList(''); renderCategories(); updateProductSelect(); updateEtiquetaSelect();
+                renderProducts(currentCategory, searchTerm); renderAdminProductList(''); renderCategories(); updateProductSelect(); updateEtiquetaSelect(); updateMermaSelect();
                 showToast('✅ Productos restaurados');
             }
         }
@@ -1294,10 +1293,7 @@
             let filteredProducts = products;
             if (searchTermAdmin.trim()) {
                 const term = searchTermAdmin.toLowerCase().trim();
-                filteredProducts = products.filter(p => 
-                    p.name.toLowerCase().includes(term) ||
-                    (p.codigo && p.codigo.toLowerCase().includes(term))
-                );
+                filteredProducts = products.filter(p => p.name.toLowerCase().includes(term) || (p.codigo && p.codigo.toLowerCase().includes(term)));
             }
             if (!filteredProducts || filteredProducts.length === 0) {
                 container.innerHTML = `<small>${searchTermAdmin.trim() ? '🔍 No se encontraron productos' : 'No hay productos.'}</small>`;
@@ -1306,8 +1302,7 @@
             container.innerHTML = filteredProducts.map(p => {
                 const stock = parseInt(p.stock) || 0;
                 const unidad = p.unidad || 'pza';
-                let stockClass = 'ok';
-                let stockText = '✅ Disponible';
+                let stockClass = 'ok', stockText = '✅ Disponible';
                 if (stock < 0) { stockClass = 'neg'; stockText = '⚠️ Negativo'; }
                 else if (stock === 0) { stockClass = 'out'; stockText = '❌ Agotado'; }
                 else if (stock <= 5) { stockClass = 'low'; stockText = '⚠️ Bajo'; }
@@ -1319,6 +1314,51 @@
                     </div>
                 </div>`;
             }).join('');
+        }
+
+        // NUEVO: Render Inventario
+        function renderInventario() {
+            const container = document.getElementById('inventarioListContainer');
+            if(!container) return;
+            
+            let totalArticulos = 0;
+            let valorTotal = 0;
+            
+            if (products.length === 0) {
+                container.innerHTML = '<small>Sin productos en inventario.</small>';
+                document.getElementById('invTotalArticulos').textContent = '0';
+                document.getElementById('invValorTotal').textContent = '$0.00';
+                return;
+            }
+            
+            container.innerHTML = products.map(p => {
+                const stock = parseInt(p.stock) || 0;
+                const costo = parseFloat(p.costo) || 0;
+                const valor = stock * costo;
+                const unidad = p.unidad || 'pza';
+                
+                totalArticulos += stock;
+                valorTotal += valor;
+                
+                let stockClass = 'ok';
+                if (stock < 0) stockClass = 'neg';
+                else if (stock === 0) stockClass = 'out';
+                else if (stock <= 5) stockClass = 'low';
+                
+                return `<div class="item" style="display:block; padding: 8px 0; border-bottom: 1px solid #eee;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <strong>${p.name}</strong>
+                        <span class="stock-badge ${stockClass}">${stock} ${unidad}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size: 11px; color: #666;">
+                        <span>Costo: $${costo.toFixed(2)} c/u</span>
+                        <span>Valor: <strong>$${valor.toFixed(2)}</strong></span>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            document.getElementById('invTotalArticulos').textContent = totalArticulos;
+            document.getElementById('invValorTotal').textContent = '$' + valorTotal.toFixed(2);
         }
 
         function renderAdminCategoryList() {
@@ -1411,15 +1451,9 @@
 
         function cerrarAdmin() { document.getElementById('adminModal').classList.remove('open'); document.body.style.overflow = 'auto'; }
 
-        // ================================================================
-        // COMPRAS
-        // ================================================================
         function renderCompras() {
             const container = document.getElementById('comprasListContainer');
-            if (!compras || compras.length === 0) {
-                container.innerHTML = `<small>No hay compras registradas.</small>`;
-                return;
-            }
+            if (!compras || compras.length === 0) { container.innerHTML = `<small>No hay compras registradas.</small>`; return; }
             container.innerHTML = [...compras].reverse().map(c => {
                 const fecha = new Date(c.fecha).toLocaleDateString('es');
                 const totalProd = c.productos ? c.productos.reduce((s, p) => s + p.cantidad, 0) : 0;
@@ -1438,10 +1472,8 @@
         }
 
         function verDetalleCompra(id) {
-            const compra = compras.find(c => c.id === id);
-            if (!compra) return;
-            let productosHtml = '';
-            let total = 0;
+            const compra = compras.find(c => c.id === id); if (!compra) return;
+            let productosHtml = '', total = 0;
             if (compra.productos) {
                 compra.productos.forEach(p => {
                     const subtotal = p.cantidad * p.precioUnitario;
@@ -1449,16 +1481,7 @@
                     productosHtml += `<div class="compra-item"><span class="compra-info">${p.cantidad}x ${p.nombre}</span><span class="compra-total">$${subtotal.toFixed(2)}</span></div>`;
                 });
             }
-            showModal('📦 Detalle de Compra',
-                `<div><strong>Proveedor:</strong> ${compra.proveedor}</div>
-                <div><strong>Fecha:</strong> ${new Date(compra.fecha).toLocaleString('es')}</div>
-                <div><strong>Factura:</strong> ${compra.factura || 'S/F'}</div>
-                <hr style="margin:8px 0;border:1px solid #eee;">
-                ${productosHtml}
-                <hr style="margin:8px 0;border:1px solid #eee;">
-                <div style="text-align:right;font-weight:700;font-size:18px;color:#1e3a8a;">TOTAL: $${total.toFixed(2)}</div>`,
-                'Cerrar', function() {}
-            );
+            showModal('📦 Detalle de Compra', `<div><strong>Proveedor:</strong> ${compra.proveedor}</div><div><strong>Fecha:</strong> ${new Date(compra.fecha).toLocaleString('es')}</div><div><strong>Factura:</strong> ${compra.factura || 'S/F'}</div><hr style="margin:8px 0;border:1px solid #eee;">${productosHtml}<hr style="margin:8px 0;border:1px solid #eee;"><div style="text-align:right;font-weight:700;font-size:18px;color:#1e3a8a;">TOTAL: $${total.toFixed(2)}</div>`, 'Cerrar', function() {});
         }
 
         function eliminarCompra(id) {
@@ -1469,9 +1492,6 @@
             showToast('✅ Compra eliminada');
         }
 
-        // ================================================================
-        // VENTAS
-        // ================================================================
         function renderVentas() {
             const container = document.getElementById('ventasHistorial');
             const totalEl = document.getElementById('ventasTotal');
@@ -1481,15 +1501,10 @@
 
             if (!ventas || ventas.length === 0) {
                 container.innerHTML = '<small style="color:#aaa;">Sin ventas registradas</small>';
-                totalEl.textContent = '$0';
-                utilidadEl.textContent = '$0';
-                pedidosEl.textContent = '0';
-                ticketEl.textContent = '$0';
-                return;
+                totalEl.textContent = '$0'; utilidadEl.textContent = '$0'; pedidosEl.textContent = '0'; ticketEl.textContent = '$0'; return;
             }
 
-            let totalVentas = 0;
-            let totalUtilidad = 0;
+            let totalVentas = 0, totalUtilidad = 0;
 
             container.innerHTML = [...ventas].reverse().map(v => {
                 const fecha = new Date(v.fecha).toLocaleString('es');
@@ -1518,9 +1533,6 @@
             ticketEl.textContent = ventas.length > 0 ? '$' + (totalVentas / ventas.length).toFixed(2) : '$0';
         }
 
-        // ================================================================
-        // POS - PROCESAR VENTA (Mostrador CON Ticket)
-        // ================================================================
         function procesarVentaPOS() {
             if (cart.length === 0) { showToast('🛒 Carrito vacío', 'error'); return; }
 
@@ -1531,60 +1543,36 @@
             const tipoVenta = document.getElementById('tipoVenta').value || 'mostrador';
             const metodoPago = metodoPagoSeleccionado || 'efectivo';
 
-            // 🔥 NO VERIFICAR STOCK - SIEMPRE PERMITIR VENTA
-            // Simplemente descontar stock (puede quedar negativo)
             for (const item of cart) {
                 const prod = products.find(p => p.id === item.id);
-                if (prod) {
-                    prod.stock = (parseInt(prod.stock) || 0) - item.qty;
-                }
+                if (prod) { prod.stock = (parseInt(prod.stock) || 0) - item.qty; }
             }
             saveData('gaeto_productos', products);
 
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
 
-            // Calcular cambio
-            let cambio = 0;
-            let pagaCon = 0;
+            let cambio = 0, pagaCon = 0;
             if (metodoPago === 'efectivo') {
                 pagaCon = parseFloat(document.getElementById('pagaCon').value) || 0;
                 cambio = pagaCon - total;
-                if (pagaCon > 0 && cambio < 0) {
-                    showToast('⚠️ El pago es insuficiente', 'error');
-                    return;
-                }
+                if (pagaCon > 0 && cambio < 0) { showToast('⚠️ El pago es insuficiente', 'error'); return; }
             }
 
-            // Registrar venta
             const venta = {
                 id: 'venta_' + Date.now(),
                 fecha: new Date().toISOString(),
-                clienteNombre: nombre,
-                clientePhone: phone,
-                direccion: direccion,
-                referencia: referencia,
-                tipoVenta: tipoVenta,
-                metodoPago: metodoPago,
+                clienteNombre: nombre, clientePhone: phone,
+                direccion: direccion, referencia: referencia,
+                tipoVenta: tipoVenta, metodoPago: metodoPago,
                 productos: cart.map(item => {
                     const prod = products.find(p => p.id === item.id);
-                    return {
-                        id: item.id,
-                        nombre: item.name,
-                        cantidad: item.qty,
-                        precioUnitario: item.price,
-                        costo: prod ? prod.costo || 0 : 0,
-                        unidad: prod ? prod.unidad || 'pza' : 'pza'
-                    };
+                    return { id: item.id, nombre: item.name, cantidad: item.qty, precioUnitario: item.price, costo: prod ? prod.costo || 0 : 0, unidad: prod ? prod.unidad || 'pza' : 'pza' };
                 }),
-                total: total,
-                pagaCon: pagaCon,
-                cambio: cambio,
-                estado: 'CONFIRMADO'
+                total: total, pagaCon: pagaCon, cambio: cambio, estado: 'CONFIRMADO'
             };
             ventas.push(venta);
             saveData('gaeto_ventas', ventas);
 
-            // Registrar pedido
             const pedido = {
                 id: 'ped_' + Date.now(),
                 fecha: new Date().toLocaleString('es-MX'),
@@ -1592,14 +1580,11 @@
                 items: cart.map(item => ({ ...item })),
                 total: total,
                 direccion: { street: direccion, ref: referencia },
-                estado: 'entregado',
-                tipoVenta: tipoVenta,
-                metodoPago: metodoPago
+                estado: 'entregado', tipoVenta: tipoVenta, metodoPago: metodoPago
             };
             pedidos.push(pedido);
             saveData('gaeto_pedidos', pedidos);
 
-            // Guardar cliente
             clientes = loadData('gaeto_clientes', {});
             clientes[phone] = { nombre, calle: direccion, referencia: referencia };
             saveData('gaeto_clientes', clientes);
@@ -1612,7 +1597,6 @@
 
             document.getElementById('checkoutModal').classList.remove('open');
 
-            // 🔥 LÓGICA MODIFICADA: Si es "mostrador_sin_ticket", no abrir el ticket
             if (tipoVenta !== 'mostrador_sin_ticket') {
                 const ticketData = { ...pedido, metodoPago, cambio, pagaCon };
                 generarTicket(ticketData);
@@ -1627,9 +1611,6 @@
             showToast('🛒 Puedes seguir agregando productos al carrito');
         }
 
-        // ================================================================
-        // GENERAR COTIZACIÓN
-        // ================================================================
         function generarCotizacion() {
             if (cart.length === 0) { showToast('🛒 Carrito vacío', 'error'); return; }
 
@@ -1644,56 +1625,26 @@
             const cotizacion = {
                 id: 'cot_' + Date.now(),
                 fecha: new Date().toISOString(),
-                clienteNombre: nombre,
-                clientePhone: phone,
-                direccion: direccion,
-                referencia: referencia,
+                clienteNombre: nombre, clientePhone: phone,
+                direccion: direccion, referencia: referencia,
                 tipoVenta: tipoVenta,
                 productos: cart.map(item => ({
-                    id: item.id,
-                    nombre: item.name,
-                    cantidad: item.qty,
-                    precioUnitario: item.price,
+                    id: item.id, nombre: item.name, cantidad: item.qty, precioUnitario: item.price,
                     unidad: products.find(p => p.id === item.id)?.unidad || 'pza'
                 })),
-                total: total,
-                estado: 'COTIZACION',
+                total: total, estado: 'COTIZACION',
                 vigencia: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
             };
             cotizaciones.push(cotizacion);
             saveData('gaeto_cotizaciones', cotizaciones);
 
-            let productosHtml = cotizacion.productos.map(p => 
-                `<div class="ticket-item"><span>${p.cantidad}x ${p.nombre} (${p.unidad})</span><span>$${(p.cantidad * p.precioUnitario).toFixed(2)}</span></div>`
-            ).join('');
+            let productosHtml = cotizacion.productos.map(p => `<div class="ticket-item"><span>${p.cantidad}x ${p.nombre} (${p.unidad})</span><span>$${(p.cantidad * p.precioUnitario).toFixed(2)}</span></div>`).join('');
 
-            const vigencia = new Date(cotizacion.vigencia).toLocaleDateString('es');
-
-            showModal('📄 Cotización',
-                `<div style="text-align:center;margin-bottom:10px;">
-                    <div style="font-size:20px;font-weight:700;color:#1e3a8a;">GAETO POS</div>
-                    <div style="font-size:12px;color:#888;">📋 Cotización #${cotizacion.id.slice(-6)}</div>
-                    <div style="font-size:12px;color:#888;">📅 ${new Date(cotizacion.fecha).toLocaleString('es')}</div>
-                    <div style="font-size:12px;color:#f59e0b;">⏰ Vigencia: ${vigencia}</div>
-                </div>
-                <hr style="border:1px solid #eee;margin:8px 0;">
-                <div style="font-size:13px;"><strong>👤 ${cotizacion.clienteNombre}</strong> · 📱 ${cotizacion.clientePhone}</div>
-                <div style="font-size:12px;color:#888;">📍 ${cotizacion.direccion}</div>
-                <hr style="border:1px solid #eee;margin:8px 0;">
-                ${productosHtml}
-                <hr style="border:1px solid #eee;margin:8px 0;">
-                <div style="text-align:right;font-size:20px;font-weight:700;color:#1e3a8a;">TOTAL: $${cotizacion.total.toFixed(2)}</div>
-                <div style="display:flex;gap:8px;margin-top:12px;">
-                    <button class="btn-verde" onclick="convertirCotizacionVenta('${cotizacion.id}')" style="flex:1;">🔄 Convertir en Venta</button>
-                    <button class="btn-azul" onclick="compartirCotizacion('${cotizacion.id}')" style="flex:1;"><i class="fab fa-whatsapp"></i> Enviar</button>
-                </div>`,
-                'Cerrar', function() {}
-            );
+            showModal('📄 Cotización', `<div style="text-align:center;margin-bottom:10px;"><div style="font-size:20px;font-weight:700;color:#1e3a8a;">GAETO POS</div><div style="font-size:12px;color:#888;">📋 Cotización #${cotizacion.id.slice(-6)}</div><div style="font-size:12px;color:#888;">📅 ${new Date(cotizacion.fecha).toLocaleString('es')}</div><div style="font-size:12px;color:#f59e0b;">⏰ Vigencia: ${new Date(cotizacion.vigencia).toLocaleDateString('es')}</div></div><hr style="border:1px solid #eee;margin:8px 0;"><div style="font-size:13px;"><strong>👤 ${cotizacion.clienteNombre}</strong> · 📱 ${cotizacion.clientePhone}</div><div style="font-size:12px;color:#888;">📍 ${cotizacion.direccion}</div><hr style="border:1px solid #eee;margin:8px 0;">${productosHtml}<hr style="border:1px solid #eee;margin:8px 0;"><div style="text-align:right;font-size:20px;font-weight:700;color:#1e3a8a;">TOTAL: $${cotizacion.total.toFixed(2)}</div><div style="display:flex;gap:8px;margin-top:12px;"><button class="btn-verde" onclick="convertirCotizacionVenta('${cotizacion.id}')" style="flex:1;">🔄 Convertir en Venta</button><button class="btn-azul" onclick="compartirCotizacion('${cotizacion.id}')" style="flex:1;"><i class="fab fa-whatsapp"></i> Enviar</button></div>`, 'Cerrar', function() {});
         }
 
         function convertirCotizacionVenta(id) {
-            const cotizacion = cotizaciones.find(c => c.id === id);
-            if (!cotizacion) return;
+            const cotizacion = cotizaciones.find(c => c.id === id); if (!cotizacion) return;
             cart = cotizacion.productos.map(p => ({ id: p.id, name: p.nombre, price: p.precioUnitario, qty: p.cantidad }));
             saveData('gaeto_carrito', cart);
             updateCartUI();
@@ -1711,25 +1662,13 @@
         }
 
         function compartirCotizacion(id) {
-            const cotizacion = cotizaciones.find(c => c.id === id);
-            if (!cotizacion) return;
-            let msg = `📄 *COTIZACIÓN - GAETO POS*\n`;
-            msg += `👤 *Cliente:* ${cotizacion.clienteNombre}\n`;
-            msg += `📱 *Teléfono:* ${cotizacion.clientePhone}\n`;
-            msg += `📍 *Dirección:* ${cotizacion.direccion}\n`;
-            msg += `📅 ${new Date(cotizacion.fecha).toLocaleString('es')}\n`;
-            msg += `⏰ Vigencia: ${new Date(cotizacion.vigencia).toLocaleDateString('es')}\n\n`;
-            msg += `*🛒 PRODUCTOS:*\n`;
-            cotizacion.productos.forEach(p => {
-                msg += `${p.cantidad}x ${p.nombre} (${p.unidad}) - $${p.precioUnitario.toFixed(2)} = $${(p.cantidad * p.precioUnitario).toFixed(2)}\n`;
-            });
+            const cotizacion = cotizaciones.find(c => c.id === id); if (!cotizacion) return;
+            let msg = `📄 *COTIZACIÓN - GAETO POS*\n👤 *Cliente:* ${cotizacion.clienteNombre}\n📱 *Teléfono:* ${cotizacion.clientePhone}\n📍 *Dirección:* ${cotizacion.direccion}\n📅 ${new Date(cotizacion.fecha).toLocaleString('es')}\n⏰ Vigencia: ${new Date(cotizacion.vigencia).toLocaleDateString('es')}\n\n*🛒 PRODUCTOS:*\n`;
+            cotizacion.productos.forEach(p => { msg += `${p.cantidad}x ${p.nombre} (${p.unidad}) - $${p.precioUnitario.toFixed(2)} = $${(p.cantidad * p.precioUnitario).toFixed(2)}\n`; });
             msg += `\n*💰 TOTAL: $${cotizacion.total.toFixed(2)}*`;
             window.open(`https://wa.me/522282877441?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        // ================================================================
-        // ACTUALIZAR RESUMEN DE VENTA
-        // ================================================================
         function actualizarResumenVenta() {
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const productos = cart.reduce((s, i) => s + i.qty, 0);
@@ -1741,21 +1680,14 @@
             document.getElementById('cambioCalculado').textContent = cambio >= 0 ? cambio.toFixed(2) : '0.00';
         }
 
-        // ================================================================
-        // CORTE DE CAJA
-        // ================================================================
         function calcularCorte() {
-            console.log('🔍 Calculando corte...');
-            const hoy = new Date();
-            hoy.setHours(0,0,0,0);
+            const hoy = new Date(); hoy.setHours(0,0,0,0);
             const ventasHoy = ventas.filter(v => {
-                const fechaVenta = new Date(v.fecha);
-                fechaVenta.setHours(0,0,0,0);
+                const fechaVenta = new Date(v.fecha); fechaVenta.setHours(0,0,0,0);
                 return fechaVenta.getTime() === hoy.getTime();
             });
 
-            let total = 0, efectivo = 0, tarjeta = 0, transferencia = 0, credito = 0;
-            let totalUtilidad = 0;
+            let total = 0, efectivo = 0, tarjeta = 0, transferencia = 0, credito = 0, totalUtilidad = 0;
             let clientesUnicos = new Set();
             
             ventasHoy.forEach(v => {
@@ -1764,36 +1696,27 @@
                 else if (v.metodoPago === 'tarjeta') tarjeta += v.total || 0;
                 else if (v.metodoPago === 'transferencia') transferencia += v.total || 0;
                 else if (v.metodoPago === 'credito') credito += v.total || 0;
-                
                 if (v.clientePhone) clientesUnicos.add(v.clientePhone);
-                
-                if (v.productos) {
-                    v.productos.forEach(p => {
-                        totalUtilidad += (p.precioUnitario - (p.costo || 0)) * p.cantidad;
-                    });
-                }
+                if (v.productos) { v.productos.forEach(p => { totalUtilidad += (p.precioUnitario - (p.costo || 0)) * p.cantidad; }); }
             });
 
             const comprasHoy = compras.filter(c => {
-                const fechaCompra = new Date(c.fecha);
-                fechaCompra.setHours(0,0,0,0);
+                const fechaCompra = new Date(c.fecha); fechaCompra.setHours(0,0,0,0);
                 return fechaCompra.getTime() === hoy.getTime();
             });
             const totalComprasDia = comprasHoy.reduce((s, c) => s + (c.total || 0), 0);
 
-            const mermas = products.filter(p => parseInt(p.stock) < 0);
-            const totalMermas = mermas.reduce((s, p) => s + (Math.abs(parseInt(p.stock)) * (p.costo || p.price || 0)), 0);
+            const mermasHoy = mermas.filter(m => {
+                const fechaMerma = new Date(m.fecha); fechaMerma.setHours(0,0,0,0);
+                return fechaMerma.getTime() === hoy.getTime();
+            });
+            const totalMermas = mermasHoy.reduce((s, m) => s + (m.totalCosto || 0), 0);
 
             const ticketPromedio = ventasHoy.length > 0 ? total / ventasHoy.length : 0;
 
             const ventasProductos = {};
             ventasHoy.forEach(v => {
-                if (v.productos) {
-                    v.productos.forEach(p => {
-                        if (!ventasProductos[p.nombre]) ventasProductos[p.nombre] = 0;
-                        ventasProductos[p.nombre] += p.cantidad || 0;
-                    });
-                }
+                if (v.productos) { v.productos.forEach(p => { if (!ventasProductos[p.nombre]) ventasProductos[p.nombre] = 0; ventasProductos[p.nombre] += p.cantidad || 0; }); }
             });
             const topProductos = Object.entries(ventasProductos).sort((a, b) => b[1] - a[1]);
             const topProducto = topProductos.length > 0 ? topProductos[0][0] : '-';
@@ -1828,9 +1751,8 @@
             document.getElementById('corteDetalle').innerHTML = detalle;
 
             let topHtml = '';
-            if (topProductos.length === 0) {
-                topHtml = '<small style="color:#aaa;">No hay ventas registradas hoy</small>';
-            } else {
+            if (topProductos.length === 0) { topHtml = '<small style="color:#aaa;">No hay ventas registradas hoy</small>'; } 
+            else {
                 topHtml = `<div style="font-weight:600;color:#1e3a8a;margin-bottom:4px;font-size:12px;">🏆 TOP 10 PRODUCTOS</div>`;
                 topProductos.slice(0, 10).forEach((item, index) => {
                     const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}.`;
@@ -1840,60 +1762,40 @@
             document.getElementById('topProductosContainer').innerHTML = topHtml;
 
             localStorage.setItem('gaeto_ultimo_corte', JSON.stringify({
-                fecha: hoy.toISOString(),
-                total, efectivo, tarjeta, transferencia, credito,
-                ventas: ventasHoy.length,
-                clientes: clientesUnicos.size,
-                utilidad: totalUtilidad,
-                comprasDia: totalComprasDia,
-                mermas: totalMermas,
-                ticketPromedio,
-                topProducto: topProducto,
-                topCantidad: topCantidad
+                fecha: hoy.toISOString(), total, efectivo, tarjeta, transferencia, credito,
+                ventas: ventasHoy.length, clientes: clientesUnicos.size, utilidad: totalUtilidad,
+                comprasDia: totalComprasDia, mermas: totalMermas, ticketPromedio, topProducto, topCantidad
             }));
 
             showToast('✅ Corte calculado');
         }
 
-        // ================================================================
-        // REINICIAR DÍA
-        // ================================================================
         function reiniciarDia() {
-            console.log('🔍 Reiniciando día...');
             if (!confirm('⚠️ ¿Estás seguro de reiniciar el día? Esto archivará las ventas del día y pondrá en cero el conteo.')) return;
             
-            const hoy = new Date();
-            hoy.setHours(0,0,0,0);
-            
+            const hoy = new Date(); hoy.setHours(0,0,0,0);
             const ventasHoy = ventas.filter(v => {
-                const fechaVenta = new Date(v.fecha);
-                fechaVenta.setHours(0,0,0,0);
+                const fechaVenta = new Date(v.fecha); fechaVenta.setHours(0,0,0,0);
                 return fechaVenta.getTime() === hoy.getTime();
             });
             
             const historial = loadData('gaeto_historial_ventas', []);
-            ventasHoy.forEach(v => {
-                historial.push({ ...v, fechaArchivo: new Date().toISOString() });
-            });
+            ventasHoy.forEach(v => { historial.push({ ...v, fechaArchivo: new Date().toISOString() }); });
             saveData('gaeto_historial_ventas', historial);
             
             ventas = ventas.filter(v => {
-                const fechaVenta = new Date(v.fecha);
-                fechaVenta.setHours(0,0,0,0);
+                const fechaVenta = new Date(v.fecha); fechaVenta.setHours(0,0,0,0);
                 return fechaVenta.getTime() !== hoy.getTime();
             });
             saveData('gaeto_ventas', ventas);
             
             pedidos = pedidos.filter(p => {
-                const fechaPedido = new Date(p.fecha);
-                fechaPedido.setHours(0,0,0,0);
+                const fechaPedido = new Date(p.fecha); fechaPedido.setHours(0,0,0,0);
                 return fechaPedido.getTime() !== hoy.getTime();
             });
             saveData('gaeto_pedidos', pedidos);
             
-            renderVentas();
-            renderOrderList();
-            renderClientHistory('');
+            renderVentas(); renderOrderList(); renderClientHistory('');
             
             document.getElementById('corteTotal').textContent = '$0';
             document.getElementById('corteEfectivo').textContent = '$0';
@@ -1914,147 +1816,212 @@
             showToast('✅ Día reiniciado - Ventas archivadas');
         }
 
-        // ================================================================
-        // HISTÓRICO DE VENTAS
-        // ================================================================
-        function imprimirHistoricoVentas() {
-            const historial = loadData('gaeto_historial_ventas', []);
-            if (historial.length === 0) {
-                showToast('📭 No hay historial de ventas', 'warning');
-                return;
-            }
-
-            let totalVentas = 0;
-            let totalUtilidad = 0;
-            let totalProductos = 0;
-            let ventana = window.open('', '_blank', 'width=800,height=600');
-
-            let html = `
-            <!DOCTYPE html>
-            <html><head><meta charset="UTF-8"><title>Histórico de Ventas</title>
-            <style>
-                body{font-family:'Segoe UI',sans-serif;padding:20px;color:#333;}
-                h1{color:#1e3a8a;border-bottom:3px solid #1e3a8a;padding-bottom:10px;}
-                table{width:100%;border-collapse:collapse;margin-top:15px;font-size:12px;}
-                th,td{border:1px solid #ddd;padding:6px;text-align:left;}
-                th{background:#1e3a8a;color:#fff;}
-                tr:nth-child(even){background:#f9f9f9;}
-                .footer{text-align:center;margin-top:20px;color:#888;font-size:12px;border-top:1px solid #ddd;padding-top:10px;}
-                .total-grande{font-size:18px;font-weight:700;color:#1e3a8a;text-align:right;padding:10px 0;}
-                @media print{body{padding:10px;}}
-            </style>
-            </head><body>
-            <h1>📊 HISTÓRICO DE VENTAS - GAETO POS</h1>
-            <p>Total de registros: ${historial.length}</p>
-            <table>
-                <thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Método</th><th>Total</th><th>Utilidad</th></tr></thead>
-                <tbody>`;
-
-            historial.forEach(v => {
-                const productos = v.productos ? v.productos.map(p => `${p.cantidad}x ${p.nombre}`).join(', ') : 'N/A';
-                const utilidad = v.productos ? v.productos.reduce((s, p) => s + ((p.precioUnitario - (p.costo || 0)) * p.cantidad), 0) : 0;
-                totalVentas += v.total || 0;
-                totalUtilidad += utilidad;
-                totalProductos += v.productos ? v.productos.reduce((s, p) => s + p.cantidad, 0) : 0;
-                const pagoIcon = { efectivo:'💵', tarjeta:'💳', transferencia:'🏦', credito:'📋' }[v.metodoPago] || '💵';
-                html += `<tr>
-                    <td>${new Date(v.fecha).toLocaleString('es')}</td>
-                    <td>${v.clienteNombre || 'Sin cliente'}</td>
-                    <td style="font-size:11px;max-width:150px;">${productos}</td>
-                    <td>${pagoIcon}</td>
-                    <td><strong>$${v.total || 0}</strong></td>
-                    <td style="color:${utilidad >= 0 ? '#22c55e' : '#ef4444'};">$${utilidad.toFixed(2)}</td>
-                </tr>`;
+        function calcularHistorico() {
+            const inicioStr = document.getElementById('histFechaInicio').value;
+            const finStr = document.getElementById('histFechaFin').value;
+            
+            if (!inicioStr || !finStr) { showToast('⚠️ Selecciona ambas fechas', 'warning'); return; }
+            
+            const inicio = new Date(inicioStr + 'T00:00:00');
+            const fin = new Date(finStr + 'T23:59:59');
+            
+            let histVentas = loadData('gaeto_historial_ventas', []);
+            let todasVentas = [...ventas, ...histVentas];
+            
+            let ventasFiltradas = todasVentas.filter(v => {
+                let fv = new Date(v.fecha);
+                return fv >= inicio && fv <= fin;
             });
+            
+            let comprasFiltradas = compras.filter(c => {
+                let fc = new Date(c.fecha);
+                return fc >= inicio && fc <= fin;
+            });
+            
+            let mermasFiltradas = mermas.filter(m => {
+                let fm = new Date(m.fecha);
+                return fm >= inicio && fm <= fin;
+            });
+            
+            let totalVentas = 0, totalUtilidad = 0;
+            let clientesUnicos = new Set();
+            
+            ventasFiltradas.forEach(v => {
+                totalVentas += v.total || 0;
+                if (v.productos) { v.productos.forEach(p => { totalUtilidad += (p.precioUnitario - (p.costo || 0)) * p.cantidad; }); }
+                if (v.clientePhone) clientesUnicos.add(v.clientePhone);
+            });
+            
+            let totalCompras = comprasFiltradas.reduce((s, c) => s + (c.total || 0), 0);
+            let totalMermas = mermasFiltradas.reduce((s, m) => s + (m.totalCosto || 0), 0);
+            let ticketPromedio = ventasFiltradas.length > 0 ? totalVentas / ventasFiltradas.length : 0;
+            
+            document.getElementById('histTotalVentas').textContent = '$' + totalVentas.toFixed(2);
+            document.getElementById('histUtilidad').textContent = '$' + totalUtilidad.toFixed(2);
+            document.getElementById('histCompras').textContent = '$' + totalCompras.toFixed(2);
+            document.getElementById('histTicketProm').textContent = '$' + ticketPromedio.toFixed(2);
+            document.getElementById('histClientes').textContent = clientesUnicos.size;
+            document.getElementById('histMermas').textContent = '$' + totalMermas.toFixed(2);
+            
+            showToast('✅ Histórico calculado');
+        }
 
-            html += `</tbody></table>
-            <div class="total-grande">💰 TOTAL VENTAS: $${totalVentas.toFixed(2)}</div>
-            <div class="total-grande" style="font-size:16px;">📦 Productos Vendidos: ${totalProductos} | 📈 Utilidad: $${totalUtilidad.toFixed(2)}</div>
-            <div class="footer">📞 228 287 7441 | GAETO POS | ${new Date().toLocaleDateString('es')}</div>
-            <script>window.print(); window.close();<\/script>
-            </body></html>`;
-
-            ventana.document.write(html);
+        function imprimirHistoricoVentas() {
+            const inicioStr = document.getElementById('histFechaInicio')?.value;
+            const finStr = document.getElementById('histFechaFin')?.value;
+            
+            let inicio = inicioStr ? new Date(inicioStr + 'T00:00:00') : new Date(0);
+            let fin = finStr ? new Date(finStr + 'T23:59:59') : new Date(8640000000000000);
+            
+            let histVentas = loadData('gaeto_historial_ventas', []);
+            let todasVentas = [...ventas, ...histVentas];
+            let ventasFiltradas = todasVentas.filter(v => { let fv = new Date(v.fecha); return fv >= inicio && fv <= fin; });
+            let comprasFiltradas = compras.filter(c => { let fc = new Date(c.fecha); return fc >= inicio && fc <= fin; });
+            let mermasFiltradas = mermas.filter(m => { let fm = new Date(m.fecha); return fm >= inicio && fm <= fin; });
+            
+            if (ventasFiltradas.length === 0 && comprasFiltradas.length === 0 && mermasFiltradas.length === 0) {
+                showToast('📭 No hay datos en este rango de fechas', 'warning'); return;
+            }
+            
+            let totalVentas = 0, totalUtilidad = 0, clientesUnicos = new Set(), ventasHtml = '';
+            ventasFiltradas.forEach(v => {
+                const utilidad = v.productos ? v.productos.reduce((s, p) => s + ((p.precioUnitario - (p.costo || 0)) * p.cantidad), 0) : 0;
+                totalVentas += v.total || 0; totalUtilidad += utilidad;
+                if (v.clientePhone) clientesUnicos.add(v.clientePhone);
+                ventasHtml += `<div class="item"><div>${new Date(v.fecha).toLocaleDateString('es')} ${v.clienteNombre || 'Cliente'}</div><div style="display:flex;justify-content:space-between;"><span>Venta: $${(v.total||0).toFixed(2)} | Util: $${utilidad.toFixed(2)}</span></div></div>`;
+            });
+            
+            let totalCompras = comprasFiltradas.reduce((s, c) => s + (c.total || 0), 0);
+            let totalMermas = mermasFiltradas.reduce((s, m) => s + (m.totalCosto || 0), 0);
+            let ticketPromedio = ventasFiltradas.length > 0 ? totalVentas / ventasFiltradas.length : 0;
+            
+            const ventana = window.open('', '_blank', 'width=400,height=600');
+            ventana.document.write(`
+                <!DOCTYPE html>
+                <html><head><meta charset="UTF-8"><title>Histórico 80mm</title>
+                <style>
+                    @page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; }
+                    body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; }
+                    h1 { font-size: 14px; text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 8px; }
+                    h2 { font-size: 12px; margin-top: 10px; border-bottom: 1px dashed #ccc; }
+                    .item { border-bottom: 1px dashed #eee; padding: 5px 0; }
+                    .total-line { display:flex; justify-content:space-between; font-weight:bold; margin-top:4px; }
+                    .footer { text-align: center; margin-top: 10px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px; }
+                    .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }
+                </style></head><body>
+                <h1>📊 HISTÓRICO DE VENTAS<br>GAETO POS</h1>
+                <div style="text-align:center;font-size:11px;margin-bottom:8px;">📅 ${inicioStr || 'Inicio'} al ${finStr || 'Fin'}</div>
+                <div class="total-line"><span>💰 Total Ventas:</span><span>$${totalVentas.toFixed(2)}</span></div>
+                <div class="total-line"><span>📈 Utilidad:</span><span>$${totalUtilidad.toFixed(2)}</span></div>
+                <div class="total-line"><span>🛒 Compras:</span><span>$${totalCompras.toFixed(2)}</span></div>
+                <div class="total-line"><span>🎫 Ticket Prom:</span><span>$${ticketPromedio.toFixed(2)}</span></div>
+                <div class="total-line"><span>👥 Clientes:</span><span>${clientesUnicos.size}</span></div>
+                <div class="total-line"><span>📦 Mermas:</span><span>$${totalMermas.toFixed(2)}</span></div>
+                <h2>DETALLE VENTAS</h2>
+                ${ventasHtml || '<div class="item">Sin ventas en este periodo</div>'}
+                <div class="footer">📞 228 287 7441 | GAETO POS<br>${new Date().toLocaleString('es')}</div>
+                <script>setTimeout(function(){ window.print(); }, 300);<\/script>
+                </body></html>`);
             ventana.document.close();
         }
 
         // ================================================================
-        // ETIQUETAS - CORREGIDO
+        // GENERADOR DE ETIQUETAS (TAMAÑO ANAQUEL 40x25mm)
         // ================================================================
         function generarEtiqueta() {
-            console.log('🔍 Generando etiqueta...');
             const select = document.getElementById('etiquetaProductoSelect');
             const id = select.value;
-            if (!id) { 
-                showToast('⚠️ Selecciona un producto', 'error'); 
-                return; 
-            }
+            if (!id) { showToast('⚠️ Selecciona un producto', 'error'); return; }
             const producto = products.find(p => p.id == id);
-            if (!producto) { 
-                showToast('❌ Producto no encontrado', 'error'); 
-                return; 
-            }
+            if (!producto) { showToast('❌ Producto no encontrado', 'error'); return; }
 
             const precio = parseFloat(producto.price).toFixed(2);
             const codigo = producto.codigo || 'S/C';
-            const nombre = producto.nombre;
+            const nombre = producto.name;
 
             const container = document.getElementById('etiquetaPreview');
             container.innerHTML = `
                 <div class="etiqueta-print" id="etiquetaParaImprimir">
                     <div class="etiqueta-nombre">${nombre}</div>
-                    <div class="etiqueta-codigo">🔲 ${codigo}</div>
-                    <div style="font-size:10px;color:#888;">${producto.unidad || 'pza'}</div>
-                    <div class="etiqueta-precio">$${precio}</div>
-                    <div style="font-size:8px;color:#aaa;margin-top:4px;">GAETO POS</div>
+                    <svg id="barcodeSvg"></svg>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; width:100%; margin-top:2px;">
+                        <div style="text-align:left; font-size:8px; color:#666;">
+                            <div>${producto.unidad || 'pza'}</div>
+                            <div class="etiqueta-codigo">🔲 ${codigo}</div>
+                        </div>
+                        <div class="etiqueta-precio">$${precio}</div>
+                    </div>
                 </div>
-                <div style="margin-top:10px;">
-                    <button class="btn-save" onclick="imprimirEtiqueta()" style="padding:8px;font-size:13px;">🖨️ Imprimir Etiqueta</button>
+                <div style="margin-top:15px;">
+                    <button class="btn-save" onclick="imprimirEtiqueta(${producto.id})" style="padding:8px;font-size:13px;">🖨️ Imprimir Etiqueta 40x25mm</button>
                 </div>
             `;
-            showToast('✅ Etiqueta generada');
+            
+            if (codigo !== 'S/C' && window.JsBarcode) {
+                try {
+                    JsBarcode("#barcodeSvg", codigo, {
+                        format: "CODE128",
+                        width: 1.5,
+                        height: 30,
+                        displayValue: false,
+                        margin: 2
+                    });
+                } catch(e) { console.error(e); }
+            }
+            showToast('✅ Etiqueta generada (Tamaño Anaquel)');
         }
 
-        function imprimirEtiqueta() {
-            console.log('🔍 Imprimiendo etiqueta...');
-            const etiqueta = document.getElementById('etiquetaParaImprimir');
-            if (!etiqueta) { 
-                showToast('❌ Genera una etiqueta primero', 'error'); 
-                return; 
-            }
+        function imprimirEtiqueta(prodId) {
+            const producto = products.find(p => p.id == prodId);
+            if (!producto) { showToast('❌ Producto no encontrado', 'error'); return; }
+            
+            const precio = parseFloat(producto.price).toFixed(2);
+            const codigo = producto.codigo || 'S/C';
+            const nombre = producto.name;
+            const unidad = producto.unidad || 'pza';
             
             const ventana = window.open('', '_blank', 'width=300,height=200');
-            if (!ventana) {
-                showToast('❌ Permite ventanas emergentes', 'error');
-                return;
-            }
+            if (!ventana) { showToast('❌ Permite ventanas emergentes', 'error'); return; }
             ventana.document.write(`
                 <!DOCTYPE html>
-                <html><head><meta charset="UTF-8"><title>Etiqueta</title>
+                <html><head><meta charset="UTF-8"><title>Etiqueta Anaquel</title>
+                <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
                 <style>
-                    body{display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#f0f0f0;}
-                    .etiqueta-print{font-family:'Courier New',monospace;font-size:12px;text-align:center;padding:15px;border:1px solid #999;background:#fff;width:200px;border-radius:8px;}
-                    .etiqueta-nombre{font-size:14px;font-weight:700;color:#1e3a8a;}
-                    .etiqueta-codigo{font-size:11px;color:#666;}
-                    .etiqueta-precio{font-size:13px;color:#e63946;font-weight:700;}
-                    .no-print{text-align:center;margin-top:10px;}
-                    @media print{body{background:#fff;}.no-print{display:none;}}
+                    @page { size: 40mm 25mm; margin: 0; }
+                    * { box-sizing: border-box; }
+                    body { width: 40mm; height: 25mm; margin: 0; padding: 1.5mm; font-family: 'Courier New', monospace; color: #000; display: flex; flex-direction: column; justify-content: center; }
+                    .etiqueta-nombre { font-size: 11px; font-weight: bold; margin-bottom: 1mm; line-height: 1.1; }
+                    svg { width: 100%; max-width: 36mm; height: 8mm; margin: 0 auto; }
+                    .info-row { display:flex; justify-content:space-between; align-items:flex-end; margin-top: 1mm; }
+                    .info-left { font-size: 7px; color: #333; text-align: left; }
+                    .etiqueta-precio { font-size: 14px; font-weight: bold; }
+                    .no-print { display: none; }
+                    @media screen { .no-print { display: block; text-align: center; margin-top: 20px; } body { width: 100%; height: auto; padding: 10mm; } }
                 </style>
                 </head><body>
-                    ${etiqueta.outerHTML}
+                    <div class="etiqueta-nombre">${nombre}</div>
+                    <svg id="barcode"></svg>
+                    <div class="info-row">
+                        <div class="info-left">
+                            ${unidad}<br>🔲 ${codigo}
+                        </div>
+                        <div class="etiqueta-precio">$${precio}</div>
+                    </div>
                     <div class="no-print">
                         <button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button>
                     </div>
+                    <script>
+                        window.onload = function() {
+                            try { JsBarcode("#barcode", "${codigo}", { format: "CODE128", width: 1.5, height: 30, displayValue: false, margin: 0 }); } catch(e) {}
+                            setTimeout(function() { window.print(); }, 300);
+                        };
+                    <\/script>
                 </body></html>
             `);
             ventana.document.close();
         }
 
-        // ================================================================
-        // TICKETS
-        // ================================================================
         function generarTicket(pedido) {
-            console.log('🔍 Generando ticket...');
             ticketPedidoActual = pedido;
             const body = document.getElementById('ticketBody');
             const estadoMap = { pendiente: '🟡 Pendiente', surtido: '🟢 Surtido', enruta: '🟣 En ruta', entregado: '✅ Entregado' };
@@ -2109,90 +2076,59 @@
             overlay.style.display = 'flex';
             overlay.innerHTML = `
                 <div class="modal" style="max-width:500px;">
-                    <div class="modal-header">
-                        <span>${title}</span>
-                        <button class="close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
-                    </div>
+                    <div class="modal-header"><span>${title}</span><button class="close" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
                     <div style="padding:10px 0;">${body}</div>
                     <div style="display:flex;gap:8px;margin-top:12px;">
                         <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()" style="flex:1;padding:10px;border-radius:8px;border:1px solid #ddd;background:#f0ede8;font-weight:600;cursor:pointer;">Cancelar</button>
                         <button class="btn-confirm" onclick="if(window._modalConfirm) window._modalConfirm(); this.closest('.modal-overlay').remove()" style="flex:1;padding:10px;border-radius:8px;background:#1e3a8a;color:#fff;border:none;font-weight:600;cursor:pointer;">${confirmText || 'Confirmar'}</button>
                     </div>
-                </div>
-            `;
+                </div>`;
             document.body.appendChild(overlay);
             window._modalConfirm = onConfirm || function() {};
         }
 
-        // ================================================================
-        // COMPRAS - NUEVA COMPRA
-        // ================================================================
         let productosCompraTemp = [];
 
         document.getElementById('btnNuevaCompra').addEventListener('click', function() {
             document.getElementById('formNuevaCompra').style.display = 'block';
             document.getElementById('historialCompras').style.display = 'none';
-            productosCompraTemp = [];
-            renderProductosCompraTemp();
-            updateProductSelect();
+            productosCompraTemp = []; renderProductosCompraTemp(); updateProductSelect();
             document.getElementById('compraFecha').value = new Date().toISOString().split('T')[0];
-            document.getElementById('compraProveedor').value = '';
-            document.getElementById('compraFactura').value = '';
-            document.getElementById('compraTotalPreview').textContent = 'Total: $0.00';
-            document.getElementById('compraObservaciones').value = '';
+            document.getElementById('compraProveedor').value = ''; document.getElementById('compraFactura').value = '';
+            document.getElementById('compraTotalPreview').textContent = 'Total: $0.00'; document.getElementById('compraObservaciones').value = '';
         });
 
         document.getElementById('btnVerCompras').addEventListener('click', function() {
             document.getElementById('formNuevaCompra').style.display = 'none';
-            document.getElementById('historialCompras').style.display = 'block';
-            renderCompras();
+            document.getElementById('historialCompras').style.display = 'block'; renderCompras();
         });
 
         document.getElementById('btnCancelarCompra').addEventListener('click', function() {
             document.getElementById('formNuevaCompra').style.display = 'none';
-            document.getElementById('historialCompras').style.display = 'block';
-            productosCompraTemp = [];
+            document.getElementById('historialCompras').style.display = 'block'; productosCompraTemp = [];
         });
 
         document.getElementById('btnAgregarProductoCompra').addEventListener('click', function() {
             const productoId = document.getElementById('compraProductoSelect').value;
             const cantidad = parseInt(document.getElementById('compraCantidad').value);
             const precio = parseFloat(document.getElementById('compraPrecio').value);
-            
             if (!productoId) { showToast('❌ Selecciona un producto'); return; }
             if (!cantidad || cantidad <= 0) { showToast('❌ Cantidad válida'); return; }
             if (!precio || precio <= 0) { showToast('❌ Precio válido'); return; }
-            
             const producto = products.find(p => p.id == productoId);
             if (!producto) { showToast('❌ Producto no encontrado'); return; }
-            
             const existe = productosCompraTemp.find(p => p.id === productoId);
-            if (existe) {
-                existe.cantidad += cantidad;
-                existe.subtotal = existe.cantidad * existe.precioUnitario;
-            } else {
-                productosCompraTemp.push({
-                    id: productoId,
-                    nombre: producto.name,
-                    cantidad: cantidad,
-                    precioUnitario: precio,
-                    subtotal: cantidad * precio
-                });
-            }
+            if (existe) { existe.cantidad += cantidad; existe.subtotal = existe.cantidad * existe.precioUnitario; } 
+            else { productosCompraTemp.push({ id: productoId, nombre: producto.name, cantidad: cantidad, precioUnitario: precio, subtotal: cantidad * precio }); }
             renderProductosCompraTemp();
-            document.getElementById('compraCantidad').value = '';
-            document.getElementById('compraPrecio').value = '';
-            document.getElementById('compraProductoSelect').value = '';
+            document.getElementById('compraCantidad').value = ''; document.getElementById('compraPrecio').value = ''; document.getElementById('compraProductoSelect').value = '';
             actualizarTotalCompra();
             showToast(`✅ ${producto.name} agregado`, 'success');
         });
 
         function renderProductosCompraTemp() {
             const container = document.getElementById('productosCompraLista');
-            if (productosCompraTemp.length === 0) {
-                container.innerHTML = '<small style="color:#aaa;">Sin productos</small>';
-                return;
-            }
+            if (productosCompraTemp.length === 0) { container.innerHTML = '<small style="color:#aaa;">Sin productos</small>'; return; }
             container.innerHTML = productosCompraTemp.map((p, i) => {
                 return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;font-size:13px;">
                     <span>${p.cantidad}x ${p.nombre} - $${p.precioUnitario.toFixed(2)}</span>
@@ -2204,11 +2140,7 @@
             }).join('');
         }
 
-        function eliminarProductoCompraTemp(index) {
-            productosCompraTemp.splice(index, 1);
-            renderProductosCompraTemp();
-            actualizarTotalCompra();
-        }
+        function eliminarProductoCompraTemp(index) { productosCompraTemp.splice(index, 1); renderProductosCompraTemp(); actualizarTotalCompra(); }
 
         function actualizarTotalCompra() {
             const total = productosCompraTemp.reduce((s, p) => s + p.subtotal, 0);
@@ -2220,302 +2152,152 @@
             const fecha = document.getElementById('compraFecha').value;
             const factura = document.getElementById('compraFactura').value.trim() || 'S/F';
             const observaciones = document.getElementById('compraObservaciones').value.trim();
-            
             if (!proveedor) { showToast('❌ Ingresa el proveedor'); return; }
             if (productosCompraTemp.length === 0) { showToast('❌ Agrega productos'); return; }
             if (!fecha) { showToast('❌ Selecciona una fecha'); return; }
             
             const total = productosCompraTemp.reduce((s, p) => s + p.subtotal, 0);
-            
-            const compra = {
-                id: 'compra_' + Date.now(),
-                fecha: new Date(fecha).toISOString(),
-                proveedor: proveedor,
-                factura: factura,
-                observaciones: observaciones,
-                productos: productosCompraTemp.map(p => ({...p})),
-                total: total
-            };
+            const compra = { id: 'compra_' + Date.now(), fecha: new Date(fecha).toISOString(), proveedor: proveedor, factura: factura, observaciones: observaciones, productos: productosCompraTemp.map(p => ({...p})), total: total };
             compras.push(compra);
             saveData('gaeto_compras', compras);
             
             for (const item of productosCompraTemp) {
                 const prod = products.find(p => p.id == item.id);
-                if (prod) {
-                    prod.stock = (parseInt(prod.stock) || 0) + item.cantidad;
-                    if (item.precioUnitario > 0) prod.costo = item.precioUnitario;
-                }
+                if (prod) { prod.stock = (parseInt(prod.stock) || 0) + item.cantidad; if (item.precioUnitario > 0) prod.costo = item.precioUnitario; }
             }
             saveData('gaeto_productos', products);
             
-            productosCompraTemp = [];
-            renderProductosCompraTemp();
-            renderCompras();
-            renderProducts(currentCategory, searchTerm);
-            updateProductSelect();
-            document.getElementById('formNuevaCompra').style.display = 'none';
-            document.getElementById('historialCompras').style.display = 'block';
+            productosCompraTemp = []; renderProductosCompraTemp(); renderCompras(); renderProducts(currentCategory, searchTerm); updateProductSelect();
+            document.getElementById('formNuevaCompra').style.display = 'none'; document.getElementById('historialCompras').style.display = 'block';
             showToast('✅ Compra registrada y stock actualizado');
         });
 
         // ================================================================
-        // FUNCIONES DE IMPRESIÓN
+        // FUNCIONES DE IMPRESIÓN TÉRMICAS 80MM OPTIMIZADAS
         // ================================================================
         function imprimirProductos() {
-            const ventana = window.open('', '_blank', 'width=800,height=600');
-            let html = `
-            <!DOCTYPE html>
-            <html><head><meta charset="UTF-8"><title>Productos - GAETO</title>
-            <style>
-                body{font-family:'Segoe UI',sans-serif;padding:20px;color:#333;}
-                h1{color:#1e3a8a;border-bottom:3px solid #1e3a8a;padding-bottom:10px;}
-                table{width:100%;border-collapse:collapse;margin-top:15px;}
-                th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:13px;}
-                th{background:#1e3a8a;color:#fff;}
-                tr:nth-child(even){background:#f9f9f9;}
-                .footer{text-align:center;margin-top:20px;color:#888;font-size:12px;border-top:1px solid #ddd;padding-top:10px;}
-                @media print{body{padding:10px;}}
-            </style>
-            </head><body>
-            <h1>📦 Lista de Productos - GAETO POS</h1>
-            <p>Total: ${products.length} productos</p>
-            <table>
-                <thead><tr><th>#</th><th>Nombre</th><th>Código</th><th>Categoría</th><th>Unidad</th><th>Precio</th><th>Costo</th><th>Stock</th></tr></thead>
-                <tbody>`;
+            const ventana = window.open('', '_blank', 'width=400,height=600');
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Productos - GAETO</title><style>@page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; } body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; } h1 { font-size: 14px; text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 8px; } .item { border-bottom: 1px dashed #eee; padding: 5px 0; } .footer { text-align: center; margin-top: 10px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px; } .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }</style></head><body><h1>📦 LISTA DE PRODUCTOS<br>GAETO POS</h1><p style="text-align:center;">Total: ${products.length} productos</p>`;
             products.forEach((p, i) => {
-                const stock = parseInt(p.stock) || 0;
-                const unidad = p.unidad || 'pza';
-                html += `<tr><td>${i+1}</td><td>${p.name}${p.promocion ? ' 🔥' : ''}</td><td>${p.codigo || '-'}</td><td>${p.category || 'General'}</td><td>${unidad}</td><td>$${p.price}</td><td>$${p.costo || 0}</td><td>${stock}</td></tr>`;
+                const stock = parseInt(p.stock) || 0; const unidad = p.unidad || 'pza';
+                html += `<div class="item"><div><strong>${i+1}. ${p.name}</strong> ${p.promocion ? '🔥' : ''}</div><div style="display:flex;justify-content:space-between;"><span>💲$${p.price} | Stock: ${stock} ${unidad}</span><span>${p.codigo || ''}</span></div></div>`;
             });
-            html += `</tbody></table>
-            <div class="footer">📞 228 287 7441 | GAETO POS | ${new Date().toLocaleDateString('es')}</div>
-            <script>window.print(); window.close();<\/script>
+            html += `<div class="footer">📞 228 287 7441 | GAETO POS<br>${new Date().toLocaleDateString('es')}</div><div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div><script>setTimeout(function(){ window.print(); }, 300);<\/script></body></html>`;
+            ventana.document.write(html); ventana.document.close();
+        }
+
+        // NUEVO: Imprimir Inventario
+        function imprimirInventario() {
+            const ventana = window.open('', '_blank', 'width=400,height=600');
+            let totalArticulos = 0;
+            let valorTotal = 0;
+            
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Inventario - GAETO</title>
+            <style>
+                @page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; }
+                body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; }
+                h1 { font-size: 14px; text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 8px; }
+                .item { border-bottom: 1px dashed #eee; padding: 5px 0; }
+                .total-grande { text-align:center; font-size: 14px; font-weight: bold; margin-top: 10px; border-top: 1px dashed #000; padding-top: 8px; }
+                .footer { text-align: center; margin-top: 10px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px; }
+                .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }
+            </style></head><body><h1>📋 INVENTARIO ACTUAL<br>GAETO POS</h1>
+            <p style="text-align:center;">📅 ${new Date().toLocaleDateString('es')}</p>`;
+            
+            products.forEach(p => {
+                const stock = parseInt(p.stock) || 0;
+                const costo = parseFloat(p.costo) || 0;
+                const valor = stock * costo;
+                const unidad = p.unidad || 'pza';
+                
+                totalArticulos += stock;
+                valorTotal += valor;
+                
+                html += `<div class="item">
+                    <div><strong>${p.name}</strong></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;">
+                        <span>Stock: ${stock} ${unidad} ($${costo.toFixed(2)} c/u)</span>
+                        <span><strong>$${valor.toFixed(2)}</strong></span>
+                    </div>
+                </div>`;
+            });
+            
+            html += `<div class="total-grande">TOTAL ARTÍCULOS: ${totalArticulos}<br>VALOR INVENTARIO: $${valorTotal.toFixed(2)}</div>
+            <div class="footer">📞 228 287 7441 | GAETO POS<br>${new Date().toLocaleString('es')}</div>
+            <div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div>
+            <script>setTimeout(function(){ window.print(); }, 300);<\/script>
             </body></html>`;
+            
             ventana.document.write(html);
             ventana.document.close();
         }
 
         function imprimirPedidos() {
-            const ventana = window.open('', '_blank', 'width=800,height=600');
-            let html = `
-            <!DOCTYPE html>
-            <html><head><meta charset="UTF-8"><title>Pedidos - GAETO</title>
-            <style>
-                body{font-family:'Segoe UI',sans-serif;padding:20px;color:#333;}
-                h1{color:#1e3a8a;border-bottom:3px solid #1e3a8a;padding-bottom:10px;}
-                table{width:100%;border-collapse:collapse;margin-top:15px;}
-                th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px;}
-                th{background:#1e3a8a;color:#fff;}
-                tr:nth-child(even){background:#f9f9f9;}
-                .footer{text-align:center;margin-top:20px;color:#888;font-size:12px;border-top:1px solid #ddd;padding-top:10px;}
-                @media print{body{padding:10px;}}
-            </style>
-            </head><body>
-            <h1>📋 Lista de Pedidos - GAETO POS</h1>
-            <p>Total: ${pedidos.length} pedidos</p>
-            <table>
-                <thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Teléfono</th><th>Productos</th><th>Total</th><th>Estado</th><th>Tipo</th></tr></thead>
-                <tbody>`;
+            const ventana = window.open('', '_blank', 'width=400,height=600');
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pedidos - GAETO</title><style>@page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; } body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; } h1 { font-size: 14px; text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 8px; } .item { border-bottom: 1px dashed #eee; padding: 5px 0; } .footer { text-align: center; margin-top: 10px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px; } .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }</style></head><body><h1>📋 LISTA DE PEDIDOS<br>GAETO POS</h1><p style="text-align:center;">Total: ${pedidos.length} pedidos</p>`;
             [...pedidos].reverse().forEach(p => {
                 const productos = p.items ? p.items.map(i => `${i.qty}x ${i.name}`).join(', ') : 'N/A';
                 const tipoIcon = { mostrador:'🏪', domicilio:'🚚', pedido:'📦', credito:'💳' }[p.tipoVenta] || '🏪';
-                html += `<tr>
-                    <td><strong>#${p.id.slice(-6)}</strong></td>
-                    <td>${p.fecha || 'S/F'}</td>
-                    <td>${p.cliente?.nombre || 'N/A'}</td>
-                    <td>${p.cliente?.phone || 'N/A'}</td>
-                    <td style="font-size:11px;max-width:150px;">${productos}</td>
-                    <td><strong>$${p.total || 0}</strong></td>
-                    <td>${p.estado || 'pendiente'}</td>
-                    <td>${tipoIcon}</td>
-                </tr>`;
+                html += `<div class="item"><div><strong>#${p.id.slice(-6)} ${p.cliente?.nombre || 'N/A'}</strong></div><div style="font-size:11px;">📅 ${p.fecha || 'S/F'} | 📱 ${p.cliente?.phone || ''}</div><div style="font-size:11px;">📦 ${productos}</div><div style="display:flex;justify-content:space-between;"><span>${p.estado || 'pendiente'}</span><span><strong>$${p.total || 0}</strong></span></div></div>`;
             });
-            html += `</tbody></table>
-            <div class="footer">📞 228 287 7441 | GAETO POS | ${new Date().toLocaleDateString('es')}</div>
-            <script>window.print(); window.close();<\/script>
-            </body></html>`;
-            ventana.document.write(html);
-            ventana.document.close();
+            html += `<div class="footer">📞 228 287 7441 | GAETO POS<br>${new Date().toLocaleDateString('es')}</div><div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div><script>setTimeout(function(){ window.print(); }, 300);<\/script></body></html>`;
+            ventana.document.write(html); ventana.document.close();
         }
 
         function imprimirClientes() {
-            const ventana = window.open('', '_blank', 'width=800,height=600');
+            const ventana = window.open('', '_blank', 'width=400,height=600');
             const map = {};
-            pedidos.forEach(p => {
-                const phone = p.cliente?.phone || 'Desconocido';
-                if (!map[phone]) map[phone] = { phone, nombre: p.cliente?.nombre || 'Sin nombre', pedidos: [] };
-                map[phone].pedidos.push(p);
-            });
-            let html = `
-            <!DOCTYPE html>
-            <html><head><meta charset="UTF-8"><title>Clientes - GAETO</title>
-            <style>
-                body{font-family:'Segoe UI',sans-serif;padding:20px;color:#333;}
-                h1{color:#1e3a8a;border-bottom:3px solid #1e3a8a;padding-bottom:10px;}
-                table{width:100%;border-collapse:collapse;margin-top:15px;}
-                th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:13px;}
-                th{background:#1e3a8a;color:#fff;}
-                tr:nth-child(even){background:#f9f9f9;}
-                .footer{text-align:center;margin-top:20px;color:#888;font-size:12px;border-top:1px solid #ddd;padding-top:10px;}
-                @media print{body{padding:10px;}}
-            </style>
-            </head><body>
-            <h1>👥 Lista de Clientes - GAETO POS</h1>
-            <p>Total: ${Object.keys(map).length} clientes</p>
-            <table>
-                <thead><tr><th>#</th><th>Nombre</th><th>Teléfono</th><th>Pedidos</th><th>Total Gastado</th></tr></thead>
-                <tbody>`;
-            let idx = 0;
+            pedidos.forEach(p => { const phone = p.cliente?.phone || 'Desconocido'; if (!map[phone]) map[phone] = { phone, nombre: p.cliente?.nombre || 'Sin nombre', pedidos: [] }; map[phone].pedidos.push(p); });
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Clientes - GAETO</title><style>@page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; } body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; } h1 { font-size: 14px; text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 8px; } .item { border-bottom: 1px dashed #eee; padding: 6px 0; } .footer { text-align: center; margin-top: 10px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px; } .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }</style></head><body><h1>👥 LISTA DE CLIENTES<br>GAETO POS</h1>`;
             Object.keys(map).forEach(phone => {
-                const data = map[phone];
-                const total = data.pedidos.reduce((s, p) => s + (p.total || 0), 0);
-                idx++;
-                html += `<tr><td>${idx}</td><td>${data.nombre}</td><td>${phone}</td><td>${data.pedidos.length}</td><td>$${total.toFixed(2)}</td></tr>`;
+                const data = map[phone]; const total = data.pedidos.reduce((s, p) => s + (p.total || 0), 0);
+                html += `<div class="item"><div><strong>${data.nombre}</strong></div><div style="display:flex;justify-content:space-between;"><span>📱 ${phone}</span><span>${data.pedidos.length} pdd</span></div><div style="text-align:right;font-weight:bold;">💰 $${total.toFixed(2)}</div></div>`;
             });
-            html += `</tbody></table>
-            <div class="footer">📞 228 287 7441 | GAETO POS | ${new Date().toLocaleDateString('es')}</div>
-            <script>window.print(); window.close();<\/script>
-            </body></html>`;
-            ventana.document.write(html);
-            ventana.document.close();
+            html += `<div class="footer">📞 228 287 7441 | GAETO POS<br>${new Date().toLocaleDateString('es')}</div><div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div><script>setTimeout(function(){ window.print(); }, 300);<\/script></body></html>`;
+            ventana.document.write(html); ventana.document.close();
         }
 
         function imprimirCompras() {
-            const ventana = window.open('', '_blank', 'width=800,height=600');
-            let html = `
-            <!DOCTYPE html>
-            <html><head><meta charset="UTF-8"><title>Compras - GAETO</title>
-            <style>
-                body{font-family:'Segoe UI',sans-serif;padding:20px;color:#333;}
-                h1{color:#1e3a8a;border-bottom:3px solid #1e3a8a;padding-bottom:10px;}
-                table{width:100%;border-collapse:collapse;margin-top:15px;}
-                th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px;}
-                th{background:#1e3a8a;color:#fff;}
-                tr:nth-child(even){background:#f9f9f9;}
-                .footer{text-align:center;margin-top:20px;color:#888;font-size:12px;border-top:1px solid #ddd;padding-top:10px;}
-                @media print{body{padding:10px;}}
-            </style>
-            </head><body>
-            <h1>🛒 Lista de Compras - GAETO POS</h1>
-            <p>Total: ${compras.length} compras</p>
-            <table>
-                <thead><tr><th>#</th><th>Proveedor</th><th>Fecha</th><th>Factura</th><th>Productos</th><th>Total</th></tr></thead>
-                <tbody>`;
+            const ventana = window.open('', '_blank', 'width=400,height=600');
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Compras - GAETO</title><style>@page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; } body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; } h1 { font-size: 14px; text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 8px; } .item { border-bottom: 1px dashed #eee; padding: 5px 0; } .footer { text-align: center; margin-top: 10px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px; } .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }</style></head><body><h1>🛒 LISTA DE COMPRAS<br>GAETO POS</h1>`;
             compras.forEach((c, i) => {
                 const productos = c.productos ? c.productos.map(p => `${p.cantidad}x ${p.nombre}`).join(', ') : 'N/A';
-                html += `<tr>
-                    <td>${i+1}</td>
-                    <td>${c.proveedor}</td>
-                    <td>${new Date(c.fecha).toLocaleDateString('es')}</td>
-                    <td>${c.factura || 'S/F'}</td>
-                    <td style="font-size:11px;max-width:150px;">${productos}</td>
-                    <td><strong>$${c.total || 0}</strong></td>
-                </tr>`;
+                html += `<div class="item"><div><strong>${c.proveedor}</strong></div><div style="font-size:11px;">📅 ${new Date(c.fecha).toLocaleDateString('es')} | 🧾 ${c.factura || 'S/F'}</div><div style="font-size:11px;">📦 ${productos}</div><div style="text-align:right;font-weight:bold;">$${c.total ? c.total.toFixed(2) : '0.00'}</div></div>`;
             });
-            html += `</tbody></table>
-            <div class="footer">📞 228 287 7441 | GAETO POS | ${new Date().toLocaleDateString('es')}</div>
-            <script>window.print(); window.close();<\/script>
-            </body></html>`;
-            ventana.document.write(html);
-            ventana.document.close();
+            html += `<div class="footer">📞 228 287 7441 | GAETO POS<br>${new Date().toLocaleDateString('es')}</div><div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div><script>setTimeout(function(){ window.print(); }, 300);<\/script></body></html>`;
+            ventana.document.write(html); ventana.document.close();
         }
 
         function imprimirVentas() {
-            const ventana = window.open('', '_blank', 'width=800,height=600');
+            const ventana = window.open('', '_blank', 'width=400,height=600');
             let totalVentas = ventas.reduce((s, v) => s + (v.total || 0), 0);
-            let html = `
-            <!DOCTYPE html>
-            <html><head><meta charset="UTF-8"><title>Ventas - GAETO</title>
-            <style>
-                body{font-family:'Segoe UI',sans-serif;padding:20px;color:#333;}
-                h1{color:#1e3a8a;border-bottom:3px solid #1e3a8a;padding-bottom:10px;}
-                table{width:100%;border-collapse:collapse;margin-top:15px;}
-                th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px;}
-                th{background:#1e3a8a;color:#fff;}
-                tr:nth-child(even){background:#f9f9f9;}
-                .footer{text-align:center;margin-top:20px;color:#888;font-size:12px;border-top:1px solid #ddd;padding-top:10px;}
-                .total-grande{font-size:18px;font-weight:700;color:#1e3a8a;text-align:right;padding:10px 0;}
-                @media print{body{padding:10px;}}
-            </style>
-            </head><body>
-            <h1>📊 Reporte de Ventas - GAETO POS</h1>
-            <p>Total: ${ventas.length} ventas</p>
-            <table>
-                <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Método</th><th>Total</th><th>Utilidad</th><th>Tipo</th></tr></thead>
-                <tbody>`;
-            ventas.forEach((v, i) => {
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ventas - GAETO</title><style>@page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; } body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; } h1 { font-size: 14px; text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 8px; } .item { border-bottom: 1px dashed #eee; padding: 5px 0; } .total-grande { text-align:center; font-size: 16px; font-weight: bold; margin-top: 10px; border-top: 1px dashed #000; padding-top: 8px; } .footer { text-align: center; margin-top: 10px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px; } .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }</style></head><body><h1>📊 VENTAS DEL DÍA<br>GAETO POS</h1>`;
+            ventas.forEach(v => {
                 const productos = v.productos ? v.productos.map(p => `${p.cantidad}x ${p.nombre}`).join(', ') : 'N/A';
                 const utilidad = v.productos ? v.productos.reduce((s, p) => s + ((p.precioUnitario - (p.costo || 0)) * p.cantidad), 0) : 0;
                 const pagoIcon = { efectivo:'💵', tarjeta:'💳', transferencia:'🏦', credito:'📋' }[v.metodoPago] || '💵';
-                const tipoIcon = { mostrador:'🏪', domicilio:'🚚', pedido:'📦', credito:'💳' }[v.tipoVenta] || '🏪';
-                html += `<tr>
-                    <td>${i+1}</td>
-                    <td>${new Date(v.fecha).toLocaleString('es')}</td>
-                    <td>${v.clienteNombre || 'Sin cliente'}</td>
-                    <td style="font-size:11px;max-width:150px;">${productos}</td>
-                    <td>${pagoIcon} ${v.metodoPago || 'efectivo'}</td>
-                    <td><strong>$${v.total || 0}</strong></td>
-                    <td style="color:${utilidad >= 0 ? '#22c55e' : '#ef4444'};">$${utilidad.toFixed(2)}</td>
-                    <td>${tipoIcon}</td>
-                </tr>`;
+                html += `<div class="item"><div><strong>${v.clienteNombre || 'Cliente'}</strong></div><div style="font-size:11px;">📅 ${new Date(v.fecha).toLocaleTimeString('es')} | ${pagoIcon} ${v.metodoPago || ''}</div><div style="font-size:11px;">📦 ${productos}</div><div style="display:flex;justify-content:space-between;"><span>📈 $${utilidad.toFixed(2)}</span><span><strong>$${v.total || 0}</strong></span></div></div>`;
             });
-            html += `</tbody></table>
-            <div class="total-grande">💰 TOTAL VENTAS: $${totalVentas.toFixed(2)}</div>
-            <div class="footer">📞 228 287 7441 | GAETO POS | ${new Date().toLocaleDateString('es')}</div>
-            <script>window.print(); window.close();<\/script>
-            </body></html>`;
-            ventana.document.write(html);
-            ventana.document.close();
+            html += `<div class="total-grande">TOTAL: $${totalVentas.toFixed(2)}</div><div class="footer">📞 228 287 7441 | GAETO POS<br>${new Date().toLocaleDateString('es')}</div><div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div><script>setTimeout(function(){ window.print(); }, 300);<\/script></body></html>`;
+            ventana.document.write(html); ventana.document.close();
         }
 
         function imprimirCatalogo() {
-            const ventana = window.open('', '_blank', 'width=800,height=600');
-            let html = `
-            <!DOCTYPE html>
-            <html><head><meta charset="UTF-8"><title>Catálogo - GAETO</title>
-            <style>
-                body{font-family:'Segoe UI',sans-serif;padding:20px;color:#333;background:#fff;}
-                h1{color:#1e3a8a;border-bottom:3px solid #1e3a8a;padding-bottom:10px;text-align:center;}
-                .products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:15px;}
-                .product-item{border:1px solid #ddd;border-radius:10px;padding:12px;text-align:center;}
-                .product-item .name{font-weight:700;font-size:14px;min-height:40px;}
-                .product-item .price{color:#1e3a8a;font-weight:700;font-size:16px;}
-                .product-item .unidad{font-size:11px;color:#888;}
-                .footer{text-align:center;margin-top:20px;color:#888;font-size:12px;border-top:1px solid #ddd;padding-top:10px;}
-                .promo-tag{background:#1e3a8a;color:#fff;padding:2px 10px;border-radius:12px;font-size:10px;display:inline-block;}
-                @media print{body{padding:10px;}.products-grid{grid-template-columns:repeat(4,1fr);}}
-            </style>
-            </head><body>
-            <h1>📦 Catálogo de Productos - GAETO POS</h1>
-            <p style="text-align:center;">📅 ${new Date().toLocaleDateString('es')} | 📞 228 287 7441</p>
-            <p style="text-align:center;color:#888;font-size:13px;">🟢 Productos disponibles</p>
-            <div class="products-grid">`;
-            if (products.length === 0) {
-                html += `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">📭 No hay productos disponibles</div>`;
-            } else {
+            const ventana = window.open('', '_blank', 'width=400,height=600');
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Catálogo - GAETO</title><style>@page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; } body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; } h1 { font-size: 14px; text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 8px; } .item { border-bottom: 1px dashed #eee; padding: 5px 0; } .footer { text-align: center; margin-top: 10px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px; } .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }</style></head><body><h1>📦 CATÁLOGO DE PRODUCTOS<br>GAETO POS</h1><p style="text-align:center;">📅 ${new Date().toLocaleDateString('es')} | 📞 228 287 7441</p>`;
+            if (products.length === 0) { html += `<div class="item">📭 No hay productos</div>`; } 
+            else {
                 products.forEach(p => {
-                    const unidad = p.unidad || 'pza';
-                    const promoTag = p.promocion ? '<span class="promo-tag">🔥 PROMO</span>' : '';
-                    const codigoHtml = p.codigo ? `<div style="font-size:9px;color:#999;">🔲 ${p.codigo}</div>` : '';
-                    html += `<div class="product-item">
-                        <div class="name">${p.name}</div>
-                        ${codigoHtml}
-                        <div class="unidad">📏 ${unidad}</div>
-                        <div class="price">$${p.price}</div>
-                        ${promoTag}
-                    </div>`;
+                    const unidad = p.unidad || 'pza'; const promoTag = p.promocion ? '🔥 PROMO' : '';
+                    html += `<div class="item"><div><strong>${p.name}</strong> ${p.codigo ? `(${p.codigo})` : ''}</div><div style="display:flex;justify-content:space-between;"><span>${unidad} ${promoTag}</span><span style="font-weight:bold;">$${p.price}</span></div></div>`;
                 });
             }
-            html += `</div>
-            <div class="footer">📞 228 287 7441 | GAETO POS - Tu tienda de confianza</div>
-            <script>window.print(); window.close();<\/script>
-            </body></html>`;
-            ventana.document.write(html);
-            ventana.document.close();
+            html += `<div class="footer">📞 228 287 7441 | GAETO POS - Tu tienda de confianza<br>${new Date().toLocaleDateString('es')}</div><div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div><script>setTimeout(function(){ window.print(); }, 300);<\/script></body></html>`;
+            ventana.document.write(html); ventana.document.close();
         }
 
         // ================================================================
-        // DEVOLUCIONES
+        // DEVOLUCIONES Y MERMAS
         // ================================================================
         document.getElementById('btnCargarDevolucion').addEventListener('click', function() {
             const select = document.getElementById('devolucionVentaSelect');
@@ -2525,64 +2307,120 @@
             if (!venta) { showToast('Venta no encontrada', 'error'); return; }
             devolucionSeleccionada = venta;
             const container = document.getElementById('devolucionContainer');
-            let productosHtml = venta.productos.map((p, i) => `
+            
+            let productosHtml = venta.productos.map((p, i) => {
+                const disponible = p.cantidad - (p.cantidadDevuelta || 0);
+                if(disponible <= 0) return '';
+                return `
                 <div class="devolucion-item">
-                    <span>${p.nombre} (${p.unidad || 'pza'}) - $${p.precioUnitario}</span>
-                    <div class="dev-cantidad">
-                        <span>Cant: </span>
-                        <input type="number" id="devCant_${i}" value="${p.cantidad}" min="0" max="${p.cantidad}" />
-                        <span>/ ${p.cantidad}</span>
-                        <button class="btn btn-danger" onclick="devolverProducto(${i})" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">↩️</button>
+                    <div style="flex:1;text-align:left;font-size:13px;">
+                        <strong>${p.nombre}</strong><br>
+                        <small>Compró: ${p.cantidad} | Disponible: ${disponible} ${p.unidad || 'pza'}</small><br>
+                        <small>Precio: $${p.precioUnitario.toFixed(2)}</small>
                     </div>
-                </div>
-            `).join('');
+                    <div class="dev-cantidad">
+                        <label style="font-size:10px;color:#888;">Devolver</label>
+                        <input type="number" id="devCant_${i}" value="0" min="0" max="${disponible}" />
+                    </div>
+                </div>`;
+            }).join('');
+
             container.innerHTML = `
-                <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #dbeafe;">
-                    <div style="font-weight:600;color:#1e3a8a;">🧾 Venta #${venta.id.slice(-6)}</div>
-                    <div style="font-size:13px;">👤 ${venta.clienteNombre} · 📱 ${venta.clientePhone}</div>
-                    <div style="font-size:13px;">💰 Total: $${venta.total.toFixed(2)} · ${venta.metodoPago || 'efectivo'}</div>
-                    <hr style="margin:8px 0;border:1px solid #eee;">
-                    ${productosHtml}
-                    <hr style="margin:8px 0;border:1px solid #eee;">
-                    <button class="btn-azul" onclick="procesarDevolucion()" style="width:100%;">✅ Procesar Devolución</button>
+                <div style="background:#f8fafc;padding:15px;border-radius:8px;border:1px solid #dbeafe;">
+                    <div style="text-align:center;margin-bottom:10px;border-bottom:1px dashed #ccc;padding-bottom:8px;">
+                        <div style="font-weight:700;color:#1e3a8a;font-size:16px;">🧾 TICKET #${venta.id.slice(-6)}</div>
+                        <div style="font-size:12px;color:#555;">👤 ${venta.clienteNombre} · 📅 ${new Date(venta.fecha).toLocaleString('es')}</div>
+                        <div style="font-size:12px;color:#555;">💰 Total Original: $${venta.total.toFixed(2)} | 💳 ${venta.metodoPago || 'efectivo'}</div>
+                    </div>
+                    ${productosHtml || '<div style="text-align:center;color:#888;padding:10px;">Todos los productos han sido devueltos.</div>'}
+                    <button class="btn-azul" onclick="procesarDevolucion()" style="width:100%;margin-top:15px;">✅ Procesar Devolución Seleccionada</button>
                 </div>
             `;
         });
 
-        function devolverProducto(index) {
+        function procesarDevolucion() {
             if (!devolucionSeleccionada) return;
-            const input = document.getElementById(`devCant_${index}`);
-            let cantidad = parseInt(input.value) || 0;
-            const max = parseInt(input.max) || 0;
-            if (cantidad <= 0) { showToast('Cantidad inválida', 'error'); return; }
-            if (cantidad > max) { showToast('No puedes devolver más de lo comprado', 'error'); return; }
-            const producto = devolucionSeleccionada.productos[index];
-            const prod = products.find(p => p.id === producto.id);
-            if (prod) {
-                prod.stock = (parseInt(prod.stock) || 0) + cantidad;
-                saveData('gaeto_productos', products);
-            }
-            producto.cantidadDevuelta = (producto.cantidadDevuelta || 0) + cantidad;
-            const restante = producto.cantidad - (producto.cantidadDevuelta || 0);
-            if (restante <= 0) {
-                devolucionSeleccionada.productos = devolucionSeleccionada.productos.filter((_, i) => i !== index);
-            }
+            let totalDevuelto = 0;
+            let itemsDevueltos = 0;
+            
+            devolucionSeleccionada.productos.forEach((p, i) => {
+                const input = document.getElementById(`devCant_${i}`);
+                if (input) {
+                    let cant = parseInt(input.value) || 0;
+                    const max = parseInt(input.max) || 0;
+                    if (cant > 0 && cant <= max) {
+                        const prod = products.find(pr => pr.id === p.id);
+                        if (prod) { prod.stock = (parseInt(prod.stock) || 0) + cant; }
+                        p.cantidadDevuelta = (p.cantidadDevuelta || 0) + cant;
+                        totalDevuelto += cant * p.precioUnitario;
+                        itemsDevueltos += cant;
+                    }
+                }
+            });
+            
             devolucionSeleccionada.total = devolucionSeleccionada.productos.reduce((s, p) => s + (p.precioUnitario * (p.cantidad - (p.cantidadDevuelta || 0))), 0);
             const idx = ventas.findIndex(v => v.id === devolucionSeleccionada.id);
             if (idx !== -1) ventas[idx] = devolucionSeleccionada;
+            
             saveData('gaeto_ventas', ventas);
-            showToast(`✅ Devolución procesada: ${cantidad}x ${producto.nombre}`);
-            renderProducts(currentCategory, searchTerm);
+            saveData('gaeto_productos', products);
+            
+            if (itemsDevueltos > 0) {
+                showToast(`✅ Devolución procesada: ${itemsDevueltos} artículos. Total reembolso: $${totalDevuelto.toFixed(2)}`);
+            } else {
+                showToast('⚠️ No se seleccionó ninguna cantidad para devolver');
+            }
+            
             renderVentas();
-            document.getElementById('btnCargarDevolucion').click();
+            renderProducts(currentCategory, searchTerm);
+            document.getElementById('devolucionContainer').innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Devolución procesada. Selecciona otra venta si necesitas.</div>';
+            document.getElementById('devolucionVentaSelect').value = "";
         }
 
-        function procesarDevolucion() {
-            if (!devolucionSeleccionada) return;
-            showToast('✅ Devolución completada');
-            renderVentas();
+        function registrarMerma() {
+            const id = document.getElementById('mermaProductoSelect').value;
+            const cant = parseInt(document.getElementById('mermaCantidad').value);
+            const motivo = document.getElementById('mermaMotivo').value.trim() || 'No especificado';
+            
+            if(!id || !cant || cant <= 0) { showToast('❌ Datos inválidos'); return; }
+            
+            const prod = products.find(p => p.id == id);
+            if(!prod) return;
+            
+            prod.stock = (parseInt(prod.stock) || 0) - cant;
+            saveData('gaeto_productos', products);
+            
+            const merma = {
+                id: 'merma_' + Date.now(),
+                fecha: new Date().toISOString(),
+                productoId: prod.id,
+                productoNombre: prod.name,
+                cantidad: cant,
+                motivo: motivo,
+                costoUnitario: prod.costo || 0,
+                totalCosto: (prod.costo || 0) * cant
+            };
+            mermas.push(merma);
+            saveData('gaeto_mermas', mermas);
+            
+            renderMermas();
             renderProducts(currentCategory, searchTerm);
-            document.getElementById('devolucionContainer').innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Devolución procesada correctamente</div>';
+            updateMermaSelect();
+            document.getElementById('mermaCantidad').value = 1;
+            document.getElementById('mermaMotivo').value = '';
+            showToast('🗑️ Merma registrada correctamente');
+        }
+
+        function renderMermas() {
+            const container = document.getElementById('mermasListContainer');
+            if(!container) return;
+            if(mermas.length === 0) { container.innerHTML = '<small style="color:#aaa;">Sin mermas registradas</small>'; return; }
+            container.innerHTML = [...mermas].reverse().map(m => `
+                <div style="border-bottom:1px solid #eee;padding:5px 0;font-size:12px;">
+                    <strong>${m.productoNombre}</strong> (${m.cantidad} und)<br>
+                    <small>${m.motivo} - $${m.totalCosto.toFixed(2)} - ${new Date(m.fecha).toLocaleDateString('es')}</small>
+                </div>
+            `).join('');
         }
 
         function cargarVentasDevolucion() {
@@ -2596,9 +2434,6 @@
             });
         }
 
-        // ================================================================
-        // EVENTOS Y EVENT LISTENERS
-        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 GAETO POS - Iniciando...');
             
@@ -2610,7 +2445,6 @@
             cargarDatosDesdeNube();
             cargarVentasDevolucion();
 
-            // Tabs de admin
             document.querySelectorAll('.admin-tabs button').forEach(tab => {
                 tab.addEventListener('click', function() {
                     document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.remove('active'));
@@ -2620,14 +2454,14 @@
                     if (target) target.classList.add('active');
                     if (this.dataset.tab === 'tabCompras') renderCompras();
                     if (this.dataset.tab === 'tabVentas') renderVentas();
+                    if (this.dataset.tab === 'tabInventario') renderInventario(); // NUEVO
                     if (this.dataset.tab === 'tabPedidos') renderOrderList();
                     if (this.dataset.tab === 'tabClientes') renderClientHistory('');
-                    if (this.dataset.tab === 'tabDevoluciones') cargarVentasDevolucion();
+                    if (this.dataset.tab === 'tabDevoluciones') { cargarVentasDevolucion(); renderMermas(); }
                     if (this.dataset.tab === 'tabEtiquetas') updateEtiquetaSelect();
                 });
             });
 
-            // Unlock
             document.getElementById('unlockBtn').addEventListener('click', function() {
                 if (document.getElementById('unlockKeyInput').value === CONFIG.unlockPassword) {
                     localStorage.setItem('gaeto_unlocked', 'true');
@@ -2636,14 +2470,13 @@
                 } else { showToast('❌ Clave incorrecta'); }
             });
 
-            // License Panel
             let todosClicks = 0;
             document.getElementById('categoriesContainer').addEventListener('click', function(e) {
                 if (e.target.closest('.cat-btn[data-cat="todos"]')) {
                     todosClicks++;
                     if (todosClicks >= 10) {
                         todosClicks = 0;
-                        const pass = prompt('🔑 Clave de acceso al panel de licencia:');
+                        const pass = prompt('🔑 Clave de acceso al panel de licencia:')
                         if (pass === CONFIG.unlockPassword) {
                             const panel = document.getElementById('licensePanel');
                             panel.style.display = 'block';
@@ -2663,7 +2496,6 @@
             });
             document.getElementById('closeLicensePanel').addEventListener('click', () => document.getElementById('licensePanel').style.display = 'none');
 
-            // Admin (5 clicks on logo)
             let logoClicks = 0;
             document.getElementById('logoClick').addEventListener('click', function() {
                 logoClicks++;
@@ -2674,14 +2506,13 @@
                     const pass = prompt('🔐 Contraseña de administrador:')
                     if (pass === CONFIG.adminPassword) {
                         renderAdminProductList(''); renderAdminCategoryList(); renderOrderList(); renderClientHistory(''); 
-                        updateCategorySelect(); updateProductSelect(); updateEtiquetaSelect(); renderCompras(); renderVentas(); cargarVentasDevolucion();
+                        updateCategorySelect(); updateProductSelect(); updateEtiquetaSelect(); updateMermaSelect(); renderCompras(); renderVentas(); cargarVentasDevolucion(); renderMermas();
                         document.getElementById('adminModal').classList.add('open');
                     }
                 }
             });
             document.getElementById('closeAdmin').addEventListener('click', () => document.getElementById('adminModal').classList.remove('open'));
 
-            // Cart & Checkout
             document.getElementById('cartFab').addEventListener('click', () => { renderCartModal(); document.getElementById('cartModal').classList.add('open'); });
             document.getElementById('closeCart').addEventListener('click', () => document.getElementById('cartModal').classList.remove('open'));
             document.getElementById('checkoutBtn').addEventListener('click', () => {
@@ -2692,45 +2523,28 @@
             });
             document.getElementById('closeCheckout').addEventListener('click', () => document.getElementById('checkoutModal').classList.remove('open'));
 
-            // Search
-            document.getElementById('searchInput').addEventListener('input', function() { 
-                searchTerm = this.value; 
-                renderProducts(currentCategory, searchTerm); 
-            });
+            document.getElementById('searchInput').addEventListener('input', function() { searchTerm = this.value; renderProducts(currentCategory, searchTerm); });
 
-            // Scanner
             document.getElementById('scanBtn').addEventListener('click', function(e) {
                 e.preventDefault();
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    iniciarScanner();
-                } else {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) { iniciarScanner(); } 
+                else {
                     const codigo = prompt('📱 Ingresa el código del producto:')
-                    if (codigo && codigo.trim()) {
-                        procesarCodigoEscaneado(codigo.trim());
-                    }
+                    if (codigo && codigo.trim()) { procesarCodigoEscaneado(codigo.trim()); }
                 }
             });
 
-            document.getElementById('cancelScannerBtn').addEventListener('click', function() {
-                detenerScanner();
-            });
+            document.getElementById('cancelScannerBtn').addEventListener('click', function() { detenerScanner(); });
 
             document.getElementById('captureScannerBtn').addEventListener('click', function() {
                 const video = document.getElementById('scannerVideo');
-                if (video && video.srcObject) {
-                    showToast('📸 Buscando código...', 'info', 2000);
-                    leerCodigoDesdeVideo(video);
-                } else {
-                    showToast('⚠️ La cámara no está activa', 'warning');
-                    iniciarScanner();
-                }
+                if (video && video.srcObject) { showToast('📸 Buscando código...', 'info', 2000); leerCodigoDesdeVideo(video); } 
+                else { showToast('⚠️ La cámara no está activa', 'warning'); iniciarScanner(); }
             });
 
-            // Admin search
             document.getElementById('adminSearchInput').addEventListener('input', function() { renderAdminProductList(this.value); });
             document.getElementById('adminClientSearchInput').addEventListener('input', function() { renderClientHistory(this.value); });
 
-            // Image
             document.getElementById('prodImageFile').addEventListener('change', function(e) {
                 const file = e.target.files[0]; if (!file) return;
                 const reader = new FileReader();
@@ -2760,7 +2574,6 @@
                 document.getElementById('prodImageFile').value = '';
             });
 
-            // ===== TICKETS Y CÁMARA (CORREGIDO PARA EVITAR CRASH) =====
             let cameraStream = null;
             function procesarFotoCapturada(canvas) {
                 let w = canvas.width, h = canvas.height;
@@ -2772,25 +2585,18 @@
                 ctx.drawImage(canvas, 0, 0, w, h);
                 selectedImageData = finalCanvas.toDataURL('image/jpeg', 0.5);
                 const preview = document.getElementById('imagePreview');
-                if (preview) {
-                    preview.src = selectedImageData;
-                    preview.classList.add('show');
-                }
+                if (preview) { preview.src = selectedImageData; preview.classList.add('show'); }
                 const removeBtn = document.getElementById('removeImageBtn');
                 if (removeBtn) removeBtn.classList.add('show');
             }
             function cerrarCamara() {
-                if (cameraStream) {
-                    cameraStream.getTracks().forEach(track => track.stop());
-                    cameraStream = null;
-                }
+                if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; }
                 const camModal = document.getElementById('cameraModal');
                 if (camModal) camModal.classList.remove('open');
                 const errEl = document.getElementById('scannerError') || document.getElementById('cameraError');
                 if (errEl) errEl.style.display = 'none';
             }
             
-            // Listener para abrir cámara (validado para no romper el script)
             const openCamBtn = document.getElementById('openCameraBtn');
             if (openCamBtn) {
                 openCamBtn.addEventListener('click', async function() {
@@ -2813,15 +2619,13 @@
                 });
             }
 
-            // Listener para capturar foto (validado)
             const photoBtn = document.getElementById('capturePhotoBtn') || document.getElementById('captureScannerBtn');
-            if (photoBtn && photoBtn.id === 'capturePhotoBtn') { // Solo si existe el específico de foto
+            if (photoBtn && photoBtn.id === 'capturePhotoBtn') {
                 photoBtn.addEventListener('click', function() {
                     const video = document.getElementById('cameraVideo') || document.getElementById('scannerVideo');
                     if(!video) return;
-                    const canvas = document.createElement('canvas'); // Crear canvas dinámicamente
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                     procesarFotoCapturada(canvas);
@@ -2830,17 +2634,13 @@
                 });
             }
 
-            // Listener para cancelar cámara (validado)
             const cancelCamBtn = document.getElementById('cancelCameraBtn') || document.getElementById('cancelScannerBtn');
             if (cancelCamBtn && cancelCamBtn.id === 'cancelCameraBtn') {
                 cancelCamBtn.addEventListener('click', cerrarCamara);
             }
 
-            // ===== LISTENERS DE LOS BOTONES DEL TICKET (AHORA SÍ SE EJECUTARÁN) =====
             const ticketCloseBtn = document.getElementById('ticketCloseBtn');
-            if (ticketCloseBtn) {
-                ticketCloseBtn.addEventListener('click', () => document.getElementById('ticketModal').classList.remove('open'));
-            }
+            if (ticketCloseBtn) { ticketCloseBtn.addEventListener('click', () => document.getElementById('ticketModal').classList.remove('open')); }
 
             const ticketWhatsappBtn = document.getElementById('ticketWhatsappBtn');
             if (ticketWhatsappBtn) {
@@ -2860,13 +2660,9 @@
                                     files: [file]
                                 });
                                 return;
-                            } catch (err) {
-                                if (err.name === 'AbortError') return;
-                            }
+                            } catch (err) { if (err.name === 'AbortError') return; }
                         }
-                    } catch(e) {
-                        console.error('Error preparando imagen:', e);
-                    }
+                    } catch(e) { console.error('Error preparando imagen:', e); }
                     const link = document.createElement('a');
                     link.download = `ticket_${pedido.id}.png`;
                     link.href = imgData;
@@ -2884,27 +2680,28 @@
                 ticketPrintBtn.addEventListener('click', function() {
                     const ticketEl = document.getElementById('ticketToRender');
                     if (ticketEl) {
+                        const innerContent = ticketEl.innerHTML;
                         const ventana = window.open('', '_blank', 'width=400,height=600');
                         ventana.document.write(`
                             <!DOCTYPE html>
                             <html>
-                            <head><title>Ticket GAETO</title>
+                            <head><meta charset="UTF-8"><title>Ticket GAETO</title>
                             <style>
-                                body{margin:0;padding:20px;background:#f0f0f0;display:flex;justify-content:center;font-family:'Courier New',monospace;}
-                                .ticket{max-width:80mm;background:white;padding:15px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-                                .ticket .header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:8px;}
-                                .ticket .item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #ccc;font-size:12px;}
-                                .ticket .total{font-size:16px;font-weight:bold;text-align:right;border-top:2px solid #000;padding-top:5px;margin-top:5px;}
-                                .ticket .footer{text-align:center;font-size:10px;margin-top:8px;border-top:1px dashed #000;padding-top:5px;color:#888;}
-                                .ticket .cliente-info{font-size:11px;margin:5px 0;}
-                                @media print{body{background:white;padding:0;}.no-print{display:none;}}
+                                @page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; }
+                                body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; text-align: center; }
+                                .ticket-container { width: 100%; }
+                                img { max-width: 50mm; margin: 0 auto 5px; }
+                                hr { border: none; border-top: 1px dashed #ccc; margin: 8px 0; }
+                                .ticket-item { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; text-align: left; }
+                                .ticket-total { font-size: 15px; font-weight: bold; margin: 5px 0; text-align: right; }
+                                .footer { text-align: center; font-size: 10px; margin-top: 8px; }
+                                .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }
                             </style>
                             </head>
                             <body>
-                                ${ticketEl.outerHTML}
-                                <div class="no-print" style="text-align:center;margin-top:10px;">
-                                    <button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button>
-                                </div>
+                                <div class="ticket-container">${innerContent}</div>
+                                <div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div>
+                                <script>setTimeout(function(){ window.print(); }, 300);<\/script>
                             </body>
                             </html>
                         `);
@@ -2921,18 +2718,13 @@
                 });
             }
 
-            // Share
             document.getElementById('shareBtn').addEventListener('click', function() {
                 const msg = `🛒 *${CONFIG.storeName}*\n━━━━━━━━━━━━━━━\n📍 Punto de Venta · Servicio a domicilio\n📞 Pedidos: ${CONFIG.whatsappNumber}\n━━━━━━━━━━━━━━━\n✅ ¡Gracias por su preferencia!\n🙏 Estamos para servirle\n📦 ${CONFIG.storeName} - Tu tienda de confianza\n\n👇 Haz tu pedido aquí:\n${CONFIG.storeUrl}`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
             });
 
-            // Print catalog
-            document.getElementById('printCatalogBtn').addEventListener('click', function() {
-                imprimirCatalogo();
-            });
+            document.getElementById('printCatalogBtn').addEventListener('click', function() { imprimirCatalogo(); });
 
-            // Categories
             document.getElementById('categoriesContainer').addEventListener('click', function(e) {
                 const btn = e.target.closest('.cat-btn');
                 if (!btn) return;
@@ -2942,18 +2734,12 @@
                 renderProducts(currentCategory, searchTerm);
             });
 
-            // Add category
             document.getElementById('addCategoryBtn').addEventListener('click', function() {
                 const input = document.getElementById('newCategoryInput');
-                if (addCategory(input.value)) {
-                    input.value = '';
-                    showToast('✅ Categoría agregada');
-                } else {
-                    showToast('⚠️ Categoría vacía o duplicada');
-                }
+                if (addCategory(input.value)) { input.value = ''; showToast('✅ Categoría agregada'); } 
+                else { showToast('⚠️ Categoría vacía o duplicada'); }
             });
 
-            // Buscar cliente
             document.getElementById('buscarClienteBtn').addEventListener('click', function() {
                 const phoneRaw = document.getElementById('clientPhone').value.trim();
                 const phone = normalizarTelefono(phoneRaw);
@@ -2964,109 +2750,69 @@
                     document.getElementById('clientRef').value = data.referencia || '';
                     document.getElementById('autofillHint').style.display = 'block';
                     showToast('✅ Datos del cliente cargados');
-                } else {
-                    showToast('⚠️ Cliente no encontrado');
-                }
+                } else { showToast('⚠️ Cliente no encontrado'); }
             });
 
-            // Auto-fill last phone
             const lastPhone = localStorage.getItem('gaeto_last_phone');
-            if (lastPhone) {
-                document.getElementById('clientPhone').value = lastPhone;
-            }
+            if (lastPhone) { document.getElementById('clientPhone').value = lastPhone; }
 
-            // Pos payments
             document.querySelectorAll('#pagoOptions button').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('#pagoOptions button').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     metodoPagoSeleccionado = this.dataset.pago;
                     const efectivoContainer = document.getElementById('efectivoContainer');
-                    if (metodoPagoSeleccionado === 'efectivo') {
-                        efectivoContainer.style.display = 'block';
-                    } else {
-                        efectivoContainer.style.display = 'none';
-                        document.getElementById('pagaCon').value = '';
-                        document.getElementById('cambioCalculado').textContent = '0.00';
-                    }
+                    if (metodoPagoSeleccionado === 'efectivo') { efectivoContainer.style.display = 'block'; } 
+                    else { efectivoContainer.style.display = 'none'; document.getElementById('pagaCon').value = ''; document.getElementById('cambioCalculado').textContent = '0.00'; }
                     actualizarResumenVenta();
                 });
             });
 
             document.getElementById('pagaCon').addEventListener('input', actualizarResumenVenta);
 
-            // ================================================================
-            // CORTE DE CAJA - BOTONES CORREGIDOS
-            // ================================================================
-            document.getElementById('btnCorteCaja').addEventListener('click', function() {
-                console.log('🔍 Botón Calcular Corte presionado');
-                calcularCorte();
-            });
+            document.getElementById('btnCorteCaja').addEventListener('click', function() { calcularCorte(); });
             
             document.getElementById('btnImprimirCorte').addEventListener('click', function() {
-                console.log('🔍 Botón Imprimir Corte presionado');
                 const contenido = document.getElementById('corteDetalle').innerHTML;
                 const total = document.getElementById('corteTotal').textContent;
                 const topContainer = document.getElementById('topProductosContainer').innerHTML;
-                if (!contenido || contenido.includes('Selecciona "Calcular Corte"')) {
-                    showToast('⚠️ Primero calcula el corte', 'warning');
-                    return;
-                }
+                if (!contenido || contenido.includes('Selecciona "Calcular Corte"')) { showToast('⚠️ Primero calcula el corte', 'warning'); return; }
                 const ventana = window.open('', '_blank', 'width=400,height=500');
-                if (!ventana) {
-                    showToast('❌ Permite ventanas emergentes', 'error');
-                    return;
-                }
+                if (!ventana) { showToast('❌ Permite ventanas emergentes', 'error'); return; }
                 ventana.document.write(`
                     <!DOCTYPE html>
                     <html><head><meta charset="UTF-8"><title>Corte de Caja</title>
                     <style>
-                        body{font-family:'Courier New',monospace;padding:20px;font-size:13px;max-width:80mm;margin:0 auto;}
-                        h1{text-align:center;color:#1e3a8a;font-size:18px;border-bottom:2px solid #1e3a8a;padding-bottom:8px;}
-                        .footer{text-align:center;margin-top:15px;font-size:11px;color:#888;border-top:1px solid #ddd;padding-top:8px;}
-                        .detalle{background:#f8fafc;padding:12px;border-radius:8px;}
-                        .total-grande{text-align:center;font-size:20px;font-weight:700;color:#1e3a8a;padding:10px 0;}
-                        .top-list{font-size:11px;margin-top:10px;}
+                        @page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; }
+                        body{width:80mm;margin:0;padding:4mm;font-family:'Courier New',monospace;font-size:12px;}
+                        h1{text-align:center;font-size:14px;border-bottom:1px dashed #000;padding-bottom:4px;margin-bottom:8px;}
+                        .footer{text-align:center;margin-top:10px;font-size:10px;border-top:1px dashed #000;padding-top:5px;}
+                        .detalle{padding:4px 0;}
+                        .total-grande{text-align:center;font-size:16px;font-weight:bold;padding:8px 0;}
+                        .top-list{font-size:11px;margin-top:10px;border-top:1px dashed #000;padding-top:5px;}
+                        .no-print{text-align:center;margin-top:20px;}
+                        @media print{.no-print{display:none;}body{padding:2mm;}}
                     </style>
                     </head><body>
-                    <h1>💰 CORTE DE CAJA</h1>
-                    <div style="text-align:center;font-size:12px;color:#888;">📅 ${new Date().toLocaleDateString('es')}</div>
+                    <h1>💰 CORTE DE CAJA<br>GAETO POS</h1>
+                    <div style="text-align:center;font-size:11px;margin-bottom:8px;">📅 ${new Date().toLocaleDateString('es')}</div>
                     <div class="detalle">${contenido}</div>
                     <div class="total-grande">${total}</div>
                     <div class="top-list">${topContainer}</div>
                     <div class="footer">📞 228 287 7441 | GAETO POS</div>
-                    <script>
-                        window.print();
-                        window.close();
-                    <\/script>
+                    <div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div>
+                    <script>setTimeout(function(){ window.print(); }, 300);<\/script>
                     </body></html>
                 `);
                 ventana.document.close();
             });
 
-            document.getElementById('btnReiniciarDia').addEventListener('click', function() {
-                console.log('🔍 Botón Reiniciar Día presionado');
-                reiniciarDia();
-            });
+            document.getElementById('btnReiniciarDia').addEventListener('click', function() { reiniciarDia(); });
 
-            // ================================================================
-            // ETIQUETAS - BOTONES CORREGIDOS
-            // ================================================================
-            document.getElementById('btnGenerarEtiqueta').addEventListener('click', function() {
-                console.log('🔍 Botón Generar Etiqueta presionado');
-                generarEtiqueta();
-            });
-            document.getElementById('btnImprimirEtiqueta').addEventListener('click', function() {
-                console.log('🔍 Botón Imprimir Etiqueta presionado');
-                imprimirEtiqueta();
-            });
+            document.getElementById('btnGenerarEtiqueta').addEventListener('click', function() { generarEtiqueta(); });
 
-            // Historico ventas
-            document.querySelector('[onclick="imprimirHistoricoVentas()"]')?.addEventListener('click', function() {
-                imprimirHistoricoVentas();
-            });
+            document.querySelector('[onclick="imprimirHistoricoVentas()"]')?.addEventListener('click', function() { imprimirHistoricoVentas(); });
 
-            // Mantener conexión
             function mantenerConexion() {
                 setInterval(() => {
                     if (supabaseClient) {
@@ -3078,12 +2824,7 @@
             }
             mantenerConexion();
 
-            // Cerrar scanner con Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') detenerScanner();
-            });
-
-            // Actualizar resumen en tiempo real
+            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') detenerScanner(); });
             document.addEventListener('cartUpdated', actualizarResumenVenta);
             
             console.log('✅ GAETO POS - Inicialización completada');
