@@ -9,7 +9,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ===== ESTILOS COMPLETOS ===== */
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
         html,body{height:100%;overflow-y:auto !important;overflow-x:hidden}
         body{background:#f0f4ff;padding-bottom:100px;min-height:100vh}
@@ -207,7 +206,7 @@
         .camera-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:4000;flex-direction:column;align-items:center;justify-content:center;padding:20px}
         .camera-modal.open{display:flex}
         .camera-modal .scanner-container{width:100%;max-width:480px;height:60vh;background:#000;border-radius:12px;overflow:hidden;position:relative}
-        .camera-modal .scanner-container video{width:100%;height:100%;object-fit:cover}
+        .camera-modal .scanner-container video{width:100%;height:100%;object-fit:cover;background:#000}
         .camera-modal .scanner-container .scanner-overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none}
         .camera-modal .scanner-container .scanner-overlay .scan-frame{border:2px solid #22c55e;width:70%;height:40%;border-radius:8px;box-shadow:0 0 30px rgba(34,197,94,0.3);position:relative}
         .camera-modal .scanner-container .scanner-overlay .scan-frame::after{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:#22c55e;animation:scanLine 2s infinite}
@@ -898,11 +897,11 @@
             const allBtn = document.createElement('button');
             allBtn.className = 'cat-btn' + (currentCategory === 'todos' ? ' active' : '');
             allBtn.dataset.cat = 'todos';
-            const totalVisible = products.filter(p => parseInt(p.stock) > 0).length;
-            allBtn.innerHTML = `📦 Todos <span class="cat-count">${totalVisible}</span>`;
+            // Mostrar todos los productos (incluyendo sin stock) en el contador
+            allBtn.innerHTML = `📦 Todos <span class="cat-count">${products.length}</span>`;
             container.appendChild(allBtn);
             categories.forEach(c => {
-                const count = products.filter(p => p.category === c.name && parseInt(p.stock) > 0).length;
+                const count = products.filter(p => p.category === c.name).length;
                 const btn = document.createElement('button');
                 btn.className = 'cat-btn' + (currentCategory === c.name ? ' active' : '');
                 btn.dataset.cat = c.name;
@@ -913,6 +912,7 @@
 
         function renderProducts(category, search = '') {
             const container = document.getElementById('productsContainer');
+            // 🔥 MOSTRAR TODOS LOS PRODUCTOS (incluso sin stock) - SIN "AGOTADO"
             let filtered = products;
             if (category !== 'todos') filtered = filtered.filter(p => p.category === category);
             if (search.trim()) {
@@ -933,20 +933,22 @@
                 const promoClass = p.promocion ? 'promocion' : '';
                 const stock = parseInt(p.stock) || 0;
                 const unidad = p.unidad || 'pza';
+                // 🔥 SOLO MOSTRAR STOCK SI ES POSITIVO (sin palabra "Agotado")
                 let stockHtml = '';
-                if (stock < 0) {
-                    stockHtml = `<div class="stock-info"><span class="neg-stock">⚠️ Stock: ${stock} ${unidad} (Negativo)</span></div>`;
-                } else if (stock === 0) {
-                    stockHtml = `<div class="stock-info"><span class="out-stock">❌ Agotado</span></div>`;
-                } else if (stock <= 5) {
+                if (stock > 0 && stock <= 5) {
                     stockHtml = `<div class="stock-info"><span class="low-stock">⚠️ ¡Últimas ${stock} ${unidad}!</span></div>`;
-                } else {
+                } else if (stock > 5) {
                     stockHtml = `<div class="stock-info"><span class="in-stock">✅ ${stock} ${unidad} disponibles</span></div>`;
+                } else if (stock < 0) {
+                    stockHtml = `<div class="stock-info"><span class="neg-stock">⚠️ Stock: ${stock} ${unidad}</span></div>`;
                 }
+                // 🔥 ELIMINADO: ya no muestra "Agotado" (out-stock)
                 const disabledClass = stock <= 0 ? 'disabled' : '';
                 const unidadLabel = {pza:'🧩',kg:'⚖️',ml:'🧪',m3:'📐',jgo:'🔄',lt:'🫗',gr:'⚖️',doc:'📦',paq:'📦',caja:'📦',bolsa:'🛍️'}[unidad] || '📦';
                 const codigoHtml = p.codigo ? `<div class="codigo-tag">🔲 ${p.codigo}</div>` : '';
-                return `<div class="product-card ${promoClass}">${promoHtml}${imageHtml}<div class="name">${p.name}</div>${codigoHtml}<div class="unidad-tag">${unidadLabel} ${unidad}</div><div class="price">$${p.price}</div>${stockHtml}<button class="add-btn ${disabledClass}" onclick="addToCart(${p.id})" ${stock <= 0 ? 'disabled' : ''}>${stock > 0 ? '➕ Agregar' : '❌ Agotado'}</button></div>`;
+                // 🔥 Botón siempre visible, pero deshabilitado si stock <= 0
+                const btnText = stock > 0 ? '➕ Agregar' : '📦 Sin stock';
+                return `<div class="product-card ${promoClass}">${promoHtml}${imageHtml}<div class="name">${p.name}</div>${codigoHtml}<div class="unidad-tag">${unidadLabel} ${unidad}</div><div class="price">$${p.price}</div>${stockHtml}<button class="add-btn ${disabledClass}" onclick="addToCart(${p.id})" ${stock <= 0 ? 'disabled' : ''}>${btnText}</button></div>`;
             }).join('');
         }
 
@@ -989,10 +991,10 @@
             const stock = parseInt(product.stock) || 0;
             const item = cart.find(i => i.id === id);
             if (item) {
-                if (item.qty >= stock) { showToast('⚠️ No hay suficiente stock'); return; }
+                if (item.qty >= stock && stock > 0) { showToast('⚠️ No hay suficiente stock'); return; }
                 item.qty++;
             } else {
-                if (stock <= 0) { showToast('⚠️ Producto agotado'); return; }
+                if (stock <= 0) { showToast('⚠️ Producto sin stock'); return; }
                 cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
             }
             saveData('gaeto_carrito', cart);
@@ -1042,6 +1044,12 @@
             errorEl.style.display = 'none';
             scannerActive = true;
             
+            // Limpiar cualquier stream anterior
+            if (scannerStream) {
+                scannerStream.getTracks().forEach(track => track.stop());
+                scannerStream = null;
+            }
+            
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: 'environment' },
@@ -1055,7 +1063,7 @@
                     
                     if (window._scannerInterval) clearInterval(window._scannerInterval);
                     window._scannerInterval = setInterval(function() {
-                        if (!scannerActive) {
+                        if (!scannerActive || !document.getElementById('cameraModal').classList.contains('open')) {
                             clearInterval(window._scannerInterval);
                             return;
                         }
@@ -1064,7 +1072,7 @@
                 })
                 .catch(function(err) {
                     errorEl.style.display = 'block';
-                    errorEl.textContent = '⚠️ No se pudo acceder a la cámara: ' + err.message;
+                    errorEl.textContent = '⚠️ No se pudo acceder a la cámara: ' + err.message + '. Verifica permisos en tu navegador.';
                     scannerActive = false;
                 });
             } else {
@@ -1098,7 +1106,12 @@
                         })
                         .catch(() => {});
                 } else {
-                    console.log('BarcodeDetector no soportado');
+                    // Fallback: usar input manual
+                    const codigo = prompt('📱 Escanea el código manualmente o ingresa el código del producto:');
+                    if (codigo && codigo.trim()) {
+                        detenerScanner();
+                        procesarCodigoEscaneado(codigo.trim());
+                    }
                 }
             } catch(e) {
                 console.log('Error al leer código:', e);
@@ -1634,6 +1647,7 @@
 
             document.getElementById('checkoutModal').classList.remove('open');
 
+            // 🔥 SOLO mostrar ticket si NO es Mostrador
             if (tipoVenta !== 'mostrador') {
                 const ticketData = { ...pedido, metodoPago, cambio, pagaCon };
                 generarTicket(ticketData);
@@ -2005,9 +2019,15 @@
         function generarEtiqueta() {
             const select = document.getElementById('etiquetaProductoSelect');
             const id = select.value;
-            if (!id) { showToast('⚠️ Selecciona un producto', 'error'); return; }
+            if (!id) { 
+                showToast('⚠️ Selecciona un producto', 'error'); 
+                return; 
+            }
             const producto = products.find(p => p.id == id);
-            if (!producto) { showToast('❌ Producto no encontrado', 'error'); return; }
+            if (!producto) { 
+                showToast('❌ Producto no encontrado', 'error'); 
+                return; 
+            }
 
             const precio = parseFloat(producto.price).toFixed(2);
             const codigo = producto.codigo || 'S/C';
@@ -2031,9 +2051,16 @@
 
         function imprimirEtiqueta() {
             const etiqueta = document.getElementById('etiquetaParaImprimir');
-            if (!etiqueta) { showToast('❌ Genera una etiqueta primero', 'error'); return; }
+            if (!etiqueta) { 
+                showToast('❌ Genera una etiqueta primero', 'error'); 
+                return; 
+            }
             
             const ventana = window.open('', '_blank', 'width=300,height=200');
+            if (!ventana) {
+                showToast('❌ Permite ventanas emergentes', 'error');
+                return;
+            }
             ventana.document.write(`
                 <!DOCTYPE html>
                 <html><head><meta charset="UTF-8"><title>Etiqueta</title>
@@ -2699,10 +2726,19 @@
                 renderProducts(currentCategory, searchTerm); 
             });
 
-            // Scanner
+            // Scanner - CORREGIDO
             document.getElementById('scanBtn').addEventListener('click', function(e) {
                 e.preventDefault();
-                iniciarScanner();
+                // Intentar abrir cámara nativa del celular
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    iniciarScanner();
+                } else {
+                    // Fallback: input manual
+                    const codigo = prompt('📱 Ingresa el código del producto:');
+                    if (codigo && codigo.trim()) {
+                        procesarCodigoEscaneado(codigo.trim());
+                    }
+                }
             });
 
             document.getElementById('cancelScannerBtn').addEventListener('click', function() {
@@ -2716,6 +2752,8 @@
                     leerCodigoDesdeVideo(video);
                 } else {
                     showToast('⚠️ La cámara no está activa', 'warning');
+                    // Intentar reiniciar la cámara
+                    iniciarScanner();
                 }
             });
 
@@ -2953,13 +2991,23 @@
             // ================================================================
             // CORTE DE CAJA - BOTONES CORREGIDOS
             // ================================================================
-            document.getElementById('btnCorteCaja').addEventListener('click', calcularCorte);
+            document.getElementById('btnCorteCaja').addEventListener('click', function() {
+                calcularCorte();
+            });
             
             document.getElementById('btnImprimirCorte').addEventListener('click', function() {
                 const contenido = document.getElementById('corteDetalle').innerHTML;
                 const total = document.getElementById('corteTotal').textContent;
                 const topContainer = document.getElementById('topProductosContainer').innerHTML;
+                if (!contenido || contenido.includes('Selecciona "Calcular Corte"')) {
+                    showToast('⚠️ Primero calcula el corte', 'warning');
+                    return;
+                }
                 const ventana = window.open('', '_blank', 'width=400,height=500');
+                if (!ventana) {
+                    showToast('❌ Permite ventanas emergentes', 'error');
+                    return;
+                }
                 ventana.document.write(`
                     <!DOCTYPE html>
                     <html><head><meta charset="UTF-8"><title>Corte de Caja</title>
@@ -2988,16 +3036,24 @@
             });
 
             // Reiniciar día
-            document.getElementById('btnReiniciarDia').addEventListener('click', reiniciarDia);
+            document.getElementById('btnReiniciarDia').addEventListener('click', function() {
+                reiniciarDia();
+            });
 
             // ================================================================
             // ETIQUETAS - BOTONES CORREGIDOS
             // ================================================================
-            document.getElementById('btnGenerarEtiqueta').addEventListener('click', generarEtiqueta);
-            document.getElementById('btnImprimirEtiqueta').addEventListener('click', imprimirEtiqueta);
+            document.getElementById('btnGenerarEtiqueta').addEventListener('click', function() {
+                generarEtiqueta();
+            });
+            document.getElementById('btnImprimirEtiqueta').addEventListener('click', function() {
+                imprimirEtiqueta();
+            });
 
             // Historico ventas
-            document.querySelector('[onclick="imprimirHistoricoVentas()"]')?.addEventListener('click', imprimirHistoricoVentas);
+            document.querySelector('[onclick="imprimirHistoricoVentas()"]')?.addEventListener('click', function() {
+                imprimirHistoricoVentas();
+            });
 
             // Mantener conexión
             function mantenerConexion() {
