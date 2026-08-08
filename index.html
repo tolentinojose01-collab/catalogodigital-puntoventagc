@@ -505,6 +505,14 @@
                     <div class="admin-actions-bar">
                         <button class="print-btn-sm" onclick="imprimirInventario()"><i class="fas fa-print"></i> Imprimir Inventario 80mm</button>
                     </div>
+                    
+                    <!-- 🔍 BUSCADOR DE INVENTARIO -->
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8f6f3;border-radius:12px;border:1px solid #ddd;margin:10px 0;">
+                        <i class="fas fa-search" style="color:#888;font-size:14px;"></i>
+                        <input type="text" id="inventarioSearchInput" placeholder="🔍 Buscar producto en inventario por nombre o código..." 
+                               style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:30px;font-size:13px;background:#fff;outline:none;" />
+                    </div>
+                    
                     <h3 class="section-title">📋 Inventario Actual y Valoración</h3>
                     <div class="pos-corte-stats" style="grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
                         <div class="stat">
@@ -1316,22 +1324,31 @@
             }).join('');
         }
 
-        // NUEVO: Render Inventario
-        function renderInventario() {
+        // NUEVO: Render Inventario CON BUSCADOR
+        function renderInventario(filtro = '') {
             const container = document.getElementById('inventarioListContainer');
             if(!container) return;
+            
+            let productosFiltrados = products;
+            if (filtro.trim()) {
+                const term = filtro.toLowerCase().trim();
+                productosFiltrados = products.filter(p => 
+                    p.name.toLowerCase().includes(term) || 
+                    (p.codigo && p.codigo.toLowerCase().includes(term))
+                );
+            }
             
             let totalArticulos = 0;
             let valorTotal = 0;
             
-            if (products.length === 0) {
-                container.innerHTML = '<small>Sin productos en inventario.</small>';
+            if (productosFiltrados.length === 0) {
+                container.innerHTML = `<small>${filtro.trim() ? '🔍 No se encontraron productos con ese criterio' : 'Sin productos en inventario.'}</small>`;
                 document.getElementById('invTotalArticulos').textContent = '0';
                 document.getElementById('invValorTotal').textContent = '$0.00';
                 return;
             }
             
-            container.innerHTML = products.map(p => {
+            container.innerHTML = productosFiltrados.map(p => {
                 const stock = parseInt(p.stock) || 0;
                 const costo = parseFloat(p.costo) || 0;
                 const valor = stock * costo;
@@ -2454,7 +2471,10 @@
                     if (target) target.classList.add('active');
                     if (this.dataset.tab === 'tabCompras') renderCompras();
                     if (this.dataset.tab === 'tabVentas') renderVentas();
-                    if (this.dataset.tab === 'tabInventario') renderInventario(); // NUEVO
+                    if (this.dataset.tab === 'tabInventario') {
+                        document.getElementById('inventarioSearchInput').value = '';
+                        renderInventario('');
+                    }
                     if (this.dataset.tab === 'tabPedidos') renderOrderList();
                     if (this.dataset.tab === 'tabClientes') renderClientHistory('');
                     if (this.dataset.tab === 'tabDevoluciones') { cargarVentasDevolucion(); renderMermas(); }
@@ -2544,6 +2564,11 @@
 
             document.getElementById('adminSearchInput').addEventListener('input', function() { renderAdminProductList(this.value); });
             document.getElementById('adminClientSearchInput').addEventListener('input', function() { renderClientHistory(this.value); });
+            
+            // BUSCADOR DE INVENTARIO - EVENTO
+            document.getElementById('inventarioSearchInput').addEventListener('input', function() {
+                renderInventario(this.value);
+            });
 
             document.getElementById('prodImageFile').addEventListener('change', function(e) {
                 const file = e.target.files[0]; if (!file) return;
