@@ -14,9 +14,9 @@
         html,body{height:100%;overflow-y:auto !important;overflow-x:hidden}
         body{background:#f0f4ff;padding-bottom:100px;min-height:100vh}
         .header{background:#fff;padding:6px 15px 4px;display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;right:0;z-index:1000;box-shadow:0 2px 12px rgba(0,0,0,0.1);border-bottom:3px solid #1e3a8a;height:130px;gap:12px}
-        .header-logo-wrap{display:inline-block;background:transparent;line-height:0;cursor:pointer;padding:0;border:none;position:relative;flex-shrink:0}
+        .header-logo-wrap{display:inline-block;background:transparent;line-height:0;cursor:pointer;padding:0;border:none;position:relative;flex-shrink:0;user-select:none;-webkit-user-select:none}
         .header-logo-wrap img{height:120px;width:auto;display:block;filter:brightness(1.2) contrast(1.1);border:none;outline:none;background:transparent}
-        .header-title{text-align:center;color:#2d2a24;flex:1;min-width:0}
+        .header-title{text-align:center;color:#2d2a24;flex:1;min-width:0;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;cursor:pointer}
         .header-title .store-name{font-size:22px;font-weight:700;color:#1e3a8a;letter-spacing:1px}
         .header-title .slogan{font-size:14px;color:#555;font-weight:600;margin-top:2px}
         .header-title .slogan .phone-highlight{background:#25D366;padding:2px 12px;border-radius:20px;font-weight:700;color:#fff;display:inline-flex;align-items:center;gap:4px;margin:0 4px;font-size:13px}
@@ -144,7 +144,7 @@
         .admin-tabs button.active{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
         .admin-tab-content{display:none}
         .admin-tab-content.active{display:block}
-        .pos-pago-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+        .pos-pago-options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}
         .pos-pago-options button{padding:10px;border:2px solid #ddd;border-radius:10px;background:#fff;cursor:pointer;font-weight:600;font-size:13px;transition:all .2s}
         .pos-pago-options button:hover{border-color:#1e3a8a}
         .pos-pago-options button.active{border-color:#1e3a8a;background:#e0e7ff;color:#1e3a8a}
@@ -237,6 +237,23 @@
         #licensePanel .btn-license-save{width:100%;margin-top:12px;padding:10px;background:#1e3a8a;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px}
         #licensePanel .btn-license-close{width:100%;margin-top:8px;padding:8px;background:#555;color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px}
         #licensePanel .license-status{font-size:12px;text-align:center;margin-top:10px;padding:6px;border-radius:8px;background:rgba(255,255,255,0.05)}
+
+        /* MODULO COBRO MOSTRADOR RÁPIDO */
+        .fast-pos-modal { z-index: 3500 !important; }
+        .fast-pos-modal .modal { max-width: 420px; border-radius: 20px; padding: 20px; }
+        .fast-pos-header { text-align:center; padding-bottom: 15px; border-bottom: 2px solid #eee; margin-bottom: 15px; position: relative; }
+        .fast-pos-header .close-fast-pos { position:absolute; right:0; top:-5px; font-size: 26px; background:none; border:none; color:#888; cursor:pointer; }
+        .fast-pos-items { max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; border-radius: 12px; padding: 10px; }
+        .fast-pos-item { display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
+        .fast-pos-total { background:#f0f4ff; padding: 15px; border-radius: 12px; text-align: right; font-size: 24px; font-weight: 700; color:#1e3a8a; margin-bottom: 15px; }
+        .fast-cash-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .fast-cash-buttons button { background: #fff; border: 2px solid #1e3a8a; color: #1e3a8a; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 16px; }
+        .fast-cash-buttons button:hover { background: #e0e7ff; }
+        .fast-pos-cambio { background: #22c55e; color: #fff; padding: 12px; border-radius: 12px; text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 15px; display: none; }
+        .fast-pos-cambio.show { display: block; }
+        .btn-fast-confirm { width: 100%; background: #25D366; color: #fff; border: none; border-radius: 50px; padding: 16px; font-size: 19px; font-weight: 700; cursor: pointer; }
+        .input-paga-fast { width: 100%; padding: 15px; font-size: 22px; text-align: center; border: 2px solid #1e3a8a; border-radius: 12px; margin-bottom: 15px; outline: none; font-weight: 700; color: #1e3a8a; }
+
         @media(max-width:400px){.products{grid-template-columns:repeat(2,1fr);gap:10px;padding:12px}
         .header-logo-wrap img{height:70px}.header{height:115px;padding:4px 10px;gap:6px}.header-spacer{height:115px}
         .header-title .store-name{font-size:14px}.header-title .slogan{font-size:10px}.header-title .sub-slogan{font-size:10px}
@@ -249,7 +266,7 @@
         .modal{max-height:95vh;padding:15px;border-radius:16px}.modal-overlay{padding-top:20px;align-items:flex-start}
         .cart-item .qty-control button{width:26px;height:26px;font-size:14px}.cart-item .item-remove{font-size:17px}
         .checkout-modal .checkout-header .close-checkout{font-size:24px}#licensePanel{max-width:280px;right:10px;bottom:10px;padding:15px}
-        .pos-pago-options{grid-template-columns:1fr 1fr}.pos-corte-stats{grid-template-columns:1fr 1fr 1fr}}
+        .pos-pago-options{grid-template-columns:1fr 1fr 1fr}.pos-corte-stats{grid-template-columns:1fr 1fr 1fr}}
         @media(min-width:401px) and (max-width:600px){.header-logo-wrap img{height:80px}.header{height:120px}.header-spacer{height:120px}.categories-wrapper{top:120px}.search-bar{top:168px}}
         @media(min-width:601px){.products{grid-template-columns:repeat(3,1fr)}.header-logo-wrap img{height:120px}.header{height:130px}.header-spacer{height:130px}.categories-wrapper{top:130px}.search-bar{top:178px}}
         @media(min-width:900px){.products{grid-template-columns:repeat(4,1fr);max-width:1100px;margin:0 auto}.categories{justify-content:center;gap:10px;padding:0 20px}.admin-modal .modal{max-width:900px}.checkout-modal .modal{max-width:500px}}
@@ -337,7 +354,48 @@
         </div>
     </div>
 
-    <!-- ===== CHECKOUT MODAL ===== -->
+    <!-- ===== MÓDULO DE COBRO MOSTRADOR RÁPIDO (OCULTO) ===== -->
+    <div class="modal-overlay fast-pos-modal" id="fastPosModal">
+        <div class="modal">
+            <div class="fast-pos-header">
+                <button class="close-fast-pos" id="closeFastPos">&times;</button>
+                <h2 style="color:#1e3a8a;">🏪 Cobro Mostrador Express</h2>
+                <small style="color:#888;">Venta directa al público</small>
+            </div>
+            
+            <div class="fast-pos-items" id="fastPosItemsContainer"></div>
+            
+            <div class="fast-pos-total">
+                TOTAL: $<span id="fastPosTotal">0.00</span>
+            </div>
+
+            <label style="font-weight:700; color:#555; margin-bottom: 8px; display:block;">💳 Método de Pago</label>
+            <div class="pos-pago-options" id="fastPagoOptions">
+                <button class="active" data-pago="efectivo"><span class="pago-icon">💵</span> Efectivo</button>
+                <button data-pago="transferencia"><span class="pago-icon">🏦</span> Transferencia</button>
+                <button data-pago="credito"><span class="pago-icon">📋</span> Crédito</button>
+            </div>
+
+            <div id="fastEfectivoContainer">
+                <label style="font-weight:700; color:#555;">💵 Paga con:</label>
+                <input type="number" id="fastPosPagaCon" class="input-paga-fast" placeholder="0.00" step="0.5" />
+                
+                <div class="fast-cash-buttons">
+                    <button onclick="setFastCash(50)">$50</button>
+                    <button onclick="setFastCash(100)">$100</button>
+                    <button onclick="setFastCash(200)">$200</button>
+                </div>
+                
+                <div class="fast-pos-cambio" id="fastPosCambio">
+                    CAMBIO: $<span id="fastPosCambioCantidad">0.00</span>
+                </div>
+            </div>
+            
+            <button class="btn-fast-confirm" id="btnFastPosCobrar">✅ Cobrar y Generar Ticket</button>
+        </div>
+    </div>
+
+    <!-- ===== CHECKOUT MODAL (CLIENTES) ===== -->
     <div class="modal-overlay checkout-modal" id="checkoutModal">
         <div class="modal">
             <div class="checkout-header">
@@ -368,9 +426,8 @@
                     <label>💳 Método de Pago</label>
                     <div class="pos-pago-options" id="pagoOptions">
                         <button class="active" data-pago="efectivo"><span class="pago-icon">💵</span> Efectivo</button>
-                        <button data-pago="tarjeta"><span class="pago-icon">💳</span> Tarjeta</button>
                         <button data-pago="transferencia"><span class="pago-icon">🏦</span> Transferencia</button>
-                        <button data-pago="credito"><span class="pago-icon">📋</span> Crédito</button>
+                        <button data-pago="credito"><span class="pago-icon">📋</span> Crédito Personal</button>
                     </div>
                 </div>
 
@@ -447,7 +504,6 @@
                 <button class="close-admin" id="closeAdmin">&times;</button>
             </div>
             <div style="margin-top:10px;">
-                
                 <div class="admin-tabs">
                     <button class="active" data-tab="tabProductos">📦 Productos</button>
                     <button data-tab="tabInventario">📋 Inventario</button>
@@ -500,19 +556,16 @@
                     <div class="product-list-admin" id="adminProductList"><small>Productos guardados:</small></div>
                 </div>
 
-                <!-- TAB INVENTARIO (NUEVO) -->
+                <!-- TAB INVENTARIO -->
                 <div class="admin-tab-content" id="tabInventario">
                     <div class="admin-actions-bar">
                         <button class="print-btn-sm" onclick="imprimirInventario()"><i class="fas fa-print"></i> Imprimir Inventario 80mm</button>
                     </div>
-                    
-                    <!-- 🔍 BUSCADOR DE INVENTARIO -->
                     <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8f6f3;border-radius:12px;border:1px solid #ddd;margin:10px 0;">
                         <i class="fas fa-search" style="color:#888;font-size:14px;"></i>
                         <input type="text" id="inventarioSearchInput" placeholder="🔍 Buscar producto en inventario por nombre o código..." 
                                style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:30px;font-size:13px;background:#fff;outline:none;" />
                     </div>
-                    
                     <h3 class="section-title">📋 Inventario Actual y Valoración</h3>
                     <div class="pos-corte-stats" style="grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
                         <div class="stat">
@@ -610,10 +663,11 @@
                     </div>
 
                     <h3 class="section-title" style="margin-top:20px;">📅 Histórico por Rango de Fechas</h3>
-                    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:10px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;margin-bottom:10px;">
                         <div><label>Fecha Inicio</label><input type="date" id="histFechaInicio" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;"></div>
                         <div><label>Fecha Fin</label><input type="date" id="histFechaFin" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;"></div>
                         <div style="display:flex;align-items:flex-end;"><button class="btn-save" onclick="calcularHistorico()" style="padding:8px 16px;font-size:13px;margin:0;">Calcular</button></div>
+                        <div style="display:flex;align-items:flex-end;"><button class="btn-save" onclick="imprimirHistoricoVentas()" style="padding:8px 16px;font-size:13px;margin:0;background:#f59e0b;color:#1e293b;">🖨️ Imprimir</button></div>
                     </div>
                     <div class="pos-corte-stats" id="histStats" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px;">
                         <div class="stat"><div class="num" id="histTotalVentas">$0</div><div class="label">💰 Total Ventas</div></div>
@@ -622,6 +676,10 @@
                         <div class="stat"><div class="num" id="histTicketProm">$0</div><div class="label">🎫 Ticket Prom</div></div>
                         <div class="stat"><div class="num" id="histClientes">0</div><div class="label">👥 Tráfico</div></div>
                         <div class="stat"><div class="num" id="histMermas">$0</div><div class="label">📦 Mermas</div></div>
+                    </div>
+                    <h4 style="color:#1e3a8a;font-size:14px;margin-top:15px;">🧾 Listado de Tickets del Periodo</h4>
+                    <div id="histVentasListContainer" style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:8px;margin-bottom:15px;">
+                        <small style="color:#aaa;">Selecciona un rango de fechas y presiona Calcular para ver el detalle de tickets.</small>
                     </div>
                 </div>
 
@@ -728,15 +786,12 @@
                 <button class="btn-save btn-secondary" id="resetCategoriesBtn" onclick="resetCategories()">🔄 Restaurar categorías por defecto</button>
                 <button class="btn-save btn-danger" id="clearOrdersBtn" onclick="eliminarTodosPedidos()" style="background:#e67e22;">🗑️ Eliminar todos los pedidos</button>
 
-                <div class="help-text"><strong>📌 Acceso:</strong> 5 clics en el logo · Contraseña: <strong>admin123</strong><br /><strong>📸 Imágenes:</strong> Puedes subir fotos desde tu PC o celular al agregar o editar un producto.<br /><strong>🔄 Sincronización:</strong> Los datos se guardan automáticamente en la nube.<br /><strong>📦 Inventario:</strong> Módulo de inventario y valoración disponible.<br /><strong>📏 Unidades:</strong> pza, kg, ml, m3, jgo, lt, gr, doc, paq, caja, bolsa.<br /><strong>🖨️ Impresión:</strong> Formato térmico 80mm optimizado.<br /><strong>💰 POS:</strong> Métodos de pago: Efectivo, Tarjeta, Transferencia, Crédito · Cambio automático.<br /><strong>📱 Escáner:</strong> Usa la cámara para leer códigos de barras.<br /><strong>🏷️ SKU:</strong> Generador automático de códigos SKU.<br /><strong>🏷️ Etiquetas:</strong> Imprime etiquetas con nombre, código de barras y precio.<br /><strong>📊 Histórico:</strong> Reportes por rango de fechas en pestaña Ventas.</div>
+                <div class="help-text"><strong>📌 Acceso Admin:</strong> 10 clics en el LOGO · Contraseña: <strong>admin123</strong><br /><strong>⚡ Cobro Mostrador:</strong> 10 clics en el título "GAETO POS" (arriba a la izquierda). Te pedirá clave <strong>admin1310</strong>. Oculto para clientes.<br /><strong>📸 Imágenes:</strong> Puedes subir fotos desde tu PC o celular al agregar o editar un producto.<br /><strong>🔄 Sincronización:</strong> Los datos se guardan automáticamente en la nube.<br /><strong>📦 Inventario:</strong> Módulo de inventario y valoración disponible.<br /><strong>📏 Unidades:</strong> pza, kg, ml, m3, jgo, lt, gr, doc, paq, caja, bolsa.<br /><strong>🖨️ Impresión:</strong> Formato térmico 80mm optimizado.<br /><strong>💰 POS:</strong> Métodos de pago: Efectivo, Transferencia, Crédito Personal · Cambio automático.<br /><strong>📱 Escáner:</strong> Usa la cámara para leer códigos de barras.<br /><strong>🏷️ SKU:</strong> Generador automático de códigos SKU.<br /><strong>🏷️ Etiquetas:</strong> Imprime etiquetas con nombre, código de barras y precio.<br /><strong>📊 Histórico:</strong> Reportes por rango de fechas en pestaña Ventas.</div>
             </div>
         </div>
     </div>
 
     <script>
-        // ================================================================
-        // CONFIGURACIÓN SUPABASE - GAETO
-        // ================================================================
         const SUPABASE_URL = 'https://rvvvlrbtmhfbkygzcebw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_J2uG3_9SeR4VAWei9w_7bA_2WXxsSQ5';
         let supabaseClient = null;
@@ -753,12 +808,10 @@
             storeName: 'GAETO POS',
             adminPassword: 'admin123',
             unlockPassword: '#Gael680912',
+            fastPosPassword: 'admin1310',
             storeUrl: 'https://tolentinojose01-collab.github.io/catalogodigital-puntoventagc/'
         };
 
-        // ================================================================
-        // ESTADO GLOBAL
-        // ================================================================
         let categories = [];
         let products = [];
         let cart = [];
@@ -776,6 +829,7 @@
         let ticketPedidoActual = null;
         let editingProdId = null;
         let metodoPagoSeleccionado = 'efectivo';
+        let fastMetodoPago = 'efectivo';
         let devolucionSeleccionada = null;
         let scannerStream = null;
         let scannerActive = false;
@@ -787,9 +841,6 @@
 
         const DEFAULT_PRODUCTS = [];
 
-        // ================================================================
-        // FUNCIONES UTILES
-        // ================================================================
         function loadData(key, def) {
             try {
                 const stored = localStorage.getItem(key);
@@ -823,10 +874,12 @@
             if (limpio.length === 10 && !limpio.startsWith('52')) limpio = '52' + limpio;
             return limpio;
         }
+        
+        // Función helper para obtener la fecha local en formato YYYY-MM-DD (evita bugs de zona horaria)
+        function getLocalDateStr(dateObj) {
+            return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+        }
 
-        // ================================================================
-        // SISTEMA DE SINCRONIZACIÓN
-        // ================================================================
         let syncInProgress = false;
 
         function mostrarSync(mensaje, tipo = '') {
@@ -914,9 +967,6 @@
             }
         }
 
-        // ================================================================
-        // INICIALIZACIÓN DE DATOS
-        // ================================================================
         function initData() {
             categories = loadData('gaeto_categorias', DEFAULT_CATEGORIES);
             products = loadData('gaeto_productos', []);
@@ -938,9 +988,6 @@
             mermas = loadData('gaeto_mermas', []); if (!Array.isArray(mermas)) mermas = [];
         }
 
-        // ================================================================
-        // SISTEMA DE LICENCIA
-        // ================================================================
         function checkLicenseStatus() {
             const licenseMode = localStorage.getItem('gaeto_license_mode') || 'venta';
             const expiryDateStr = localStorage.getItem('gaeto_rent_expiry');
@@ -959,9 +1006,6 @@
             }
         }
 
-        // ================================================================
-        // RENDERIZADO PRINCIPAL - CATÁLOGO
-        // ================================================================
         function renderCategories() {
             const container = document.getElementById('categoriesContainer');
             container.innerHTML = '';
@@ -1324,44 +1368,31 @@
             }).join('');
         }
 
-        // NUEVO: Render Inventario CON BUSCADOR
         function renderInventario(filtro = '') {
             const container = document.getElementById('inventarioListContainer');
             if(!container) return;
-            
             let productosFiltrados = products;
             if (filtro.trim()) {
                 const term = filtro.toLowerCase().trim();
-                productosFiltrados = products.filter(p => 
-                    p.name.toLowerCase().includes(term) || 
-                    (p.codigo && p.codigo.toLowerCase().includes(term))
-                );
+                productosFiltrados = products.filter(p => p.name.toLowerCase().includes(term) || (p.codigo && p.codigo.toLowerCase().includes(term)));
             }
-            
-            let totalArticulos = 0;
-            let valorTotal = 0;
-            
+            let totalArticulos = 0, valorTotal = 0;
             if (productosFiltrados.length === 0) {
                 container.innerHTML = `<small>${filtro.trim() ? '🔍 No se encontraron productos con ese criterio' : 'Sin productos en inventario.'}</small>`;
                 document.getElementById('invTotalArticulos').textContent = '0';
                 document.getElementById('invValorTotal').textContent = '$0.00';
                 return;
             }
-            
             container.innerHTML = productosFiltrados.map(p => {
                 const stock = parseInt(p.stock) || 0;
                 const costo = parseFloat(p.costo) || 0;
                 const valor = stock * costo;
                 const unidad = p.unidad || 'pza';
-                
-                totalArticulos += stock;
-                valorTotal += valor;
-                
+                totalArticulos += stock; valorTotal += valor;
                 let stockClass = 'ok';
                 if (stock < 0) stockClass = 'neg';
                 else if (stock === 0) stockClass = 'out';
                 else if (stock <= 5) stockClass = 'low';
-                
                 return `<div class="item" style="display:block; padding: 8px 0; border-bottom: 1px solid #eee;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                         <strong>${p.name}</strong>
@@ -1373,7 +1404,6 @@
                     </div>
                 </div>`;
             }).join('');
-            
             document.getElementById('invTotalArticulos').textContent = totalArticulos;
             document.getElementById('invValorTotal').textContent = '$' + valorTotal.toFixed(2);
         }
@@ -1525,6 +1555,7 @@
 
             container.innerHTML = [...ventas].reverse().map(v => {
                 const fecha = new Date(v.fecha).toLocaleString('es');
+                const ticketId = v.id ? v.id.slice(-6) : 'N/A';
                 const productosLista = v.productos ? v.productos.map(p => `${p.cantidad}x ${p.nombre}`).join(', ') : 'Sin productos';
                 const utilidadVenta = v.productos ? v.productos.reduce((s, p) => s + ((p.precioUnitario - (p.costo || 0)) * p.cantidad), 0) : 0;
                 totalVentas += v.total || 0;
@@ -1533,8 +1564,8 @@
                 const tipoVenta = { mostrador:'🏪', domicilio:'🚚', pedido:'📦', credito:'💳' }[v.tipoVenta] || '🏪';
                 return `<div class="venta-item">
                     <div class="v-info">
-                        <div style="font-weight:600;">${fecha}</div>
-                        <div style="font-size:12px;color:#888;">${productosLista}</div>
+                        <div style="font-weight:600;">🧾 Ticket #${ticketId} - ${fecha}</div>
+                        <div style="font-size:12px;color:#888;">📦 ${productosLista}</div>
                         <div style="font-size:11px;color:#888;">👤 ${v.clienteNombre || 'Sin cliente'} ${pagoIcon} ${v.metodoPago || 'efectivo'} ${tipoVenta}</div>
                     </div>
                     <div style="text-align:right;">
@@ -1698,10 +1729,13 @@
         }
 
         function calcularCorte() {
-            const hoy = new Date(); hoy.setHours(0,0,0,0);
+            const hoy = new Date();
+            const hoyStr = getLocalDateStr(hoy);
+            
             const ventasHoy = ventas.filter(v => {
-                const fechaVenta = new Date(v.fecha); fechaVenta.setHours(0,0,0,0);
-                return fechaVenta.getTime() === hoy.getTime();
+                if (!v.fecha) return false;
+                const ventaDate = new Date(v.fecha);
+                return getLocalDateStr(ventaDate) === hoyStr;
             });
 
             let total = 0, efectivo = 0, tarjeta = 0, transferencia = 0, credito = 0, totalUtilidad = 0;
@@ -1718,14 +1752,16 @@
             });
 
             const comprasHoy = compras.filter(c => {
-                const fechaCompra = new Date(c.fecha); fechaCompra.setHours(0,0,0,0);
-                return fechaCompra.getTime() === hoy.getTime();
+                if (!c.fecha) return false;
+                const compraDate = new Date(c.fecha);
+                return getLocalDateStr(compraDate) === hoyStr;
             });
             const totalComprasDia = comprasHoy.reduce((s, c) => s + (c.total || 0), 0);
 
             const mermasHoy = mermas.filter(m => {
-                const fechaMerma = new Date(m.fecha); fechaMerma.setHours(0,0,0,0);
-                return fechaMerma.getTime() === hoy.getTime();
+                if (!m.fecha) return false;
+                const mermaDate = new Date(m.fecha);
+                return getLocalDateStr(mermaDate) === hoyStr;
             });
             const totalMermas = mermasHoy.reduce((s, m) => s + (m.totalCosto || 0), 0);
 
@@ -1790,10 +1826,13 @@
         function reiniciarDia() {
             if (!confirm('⚠️ ¿Estás seguro de reiniciar el día? Esto archivará las ventas del día y pondrá en cero el conteo.')) return;
             
-            const hoy = new Date(); hoy.setHours(0,0,0,0);
+            const hoy = new Date();
+            const hoyStr = getLocalDateStr(hoy);
+            
             const ventasHoy = ventas.filter(v => {
-                const fechaVenta = new Date(v.fecha); fechaVenta.setHours(0,0,0,0);
-                return fechaVenta.getTime() === hoy.getTime();
+                if (!v.fecha) return false;
+                const ventaDate = new Date(v.fecha);
+                return getLocalDateStr(ventaDate) === hoyStr;
             });
             
             const historial = loadData('gaeto_historial_ventas', []);
@@ -1801,14 +1840,17 @@
             saveData('gaeto_historial_ventas', historial);
             
             ventas = ventas.filter(v => {
-                const fechaVenta = new Date(v.fecha); fechaVenta.setHours(0,0,0,0);
-                return fechaVenta.getTime() !== hoy.getTime();
+                if (!v.fecha) return true; // Keep if no date
+                const ventaDate = new Date(v.fecha);
+                return getLocalDateStr(ventaDate) !== hoyStr;
             });
             saveData('gaeto_ventas', ventas);
             
+            // Filter pedidos using timestamp in ID to avoid locale parsing issues
+            const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
             pedidos = pedidos.filter(p => {
-                const fechaPedido = new Date(p.fecha); fechaPedido.setHours(0,0,0,0);
-                return fechaPedido.getTime() !== hoy.getTime();
+                const ts = parseInt(p.id.replace('ped_', ''));
+                return ts < startOfToday.getTime();
             });
             saveData('gaeto_pedidos', pedidos);
             
@@ -1829,6 +1871,15 @@
             document.getElementById('corteTopCantidad').textContent = '0';
             document.getElementById('corteDetalle').innerHTML = 'Día reiniciado. Las ventas fueron archivadas.';
             document.getElementById('topProductosContainer').innerHTML = '<small style="color:#aaa;">Calcula el corte para ver el top</small>';
+            
+            // Also clear historical stats
+            document.getElementById('histTotalVentas').textContent = '$0';
+            document.getElementById('histUtilidad').textContent = '$0';
+            document.getElementById('histCompras').textContent = '$0';
+            document.getElementById('histTicketProm').textContent = '$0';
+            document.getElementById('histClientes').textContent = '0';
+            document.getElementById('histMermas').textContent = '$0';
+            document.getElementById('histVentasListContainer').innerHTML = '<small style="color:#aaa;">Selecciona un rango de fechas y presiona Calcular para ver el detalle de tickets.</small>';
             
             showToast('✅ Día reiniciado - Ventas archivadas');
         }
@@ -1860,6 +1911,33 @@
                 return fm >= inicio && fm <= fin;
             });
             
+            // RENDERIZAR LISTA DE TICKETS
+            let ticketsHtml = '';
+            if (ventasFiltradas.length === 0) {
+                ticketsHtml = '<small style="color:#aaa;">No hay ventas en este periodo.</small>';
+            } else {
+                ticketsHtml = ventasFiltradas.reverse().map(v => {
+                    const ticketId = v.id ? v.id.slice(-6) : 'N/A';
+                    const fecha = new Date(v.fecha).toLocaleString('es');
+                    const productosLista = v.productos ? v.productos.map(p => `${p.cantidad}x ${p.nombre}`).join(', ') : 'Sin productos';
+                    const utilidadVenta = v.productos ? v.productos.reduce((s, p) => s + ((p.precioUnitario - (p.costo || 0)) * p.cantidad), 0) : 0;
+                    const pagoIcon = { efectivo:'💵', tarjeta:'💳', transferencia:'🏦', credito:'📋' }[v.metodoPago] || '💵';
+                    const tipoVenta = { mostrador:'🏪', domicilio:'🚚', pedido:'📦', credito:'💳' }[v.tipoVenta] || '🏪';
+                    return `<div class="venta-item">
+                        <div class="v-info">
+                            <div style="font-weight:600;">🧾 Ticket #${ticketId} - ${fecha}</div>
+                            <div style="font-size:12px;color:#888;">📦 ${productosLista}</div>
+                            <div style="font-size:11px;color:#888;">👤 ${v.clienteNombre || 'Sin cliente'} ${pagoIcon} ${v.metodoPago || 'efectivo'} ${tipoVenta}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="v-total">$${v.total ? v.total.toFixed(2) : '0.00'}</div>
+                            <div style="font-size:11px;color:${utilidadVenta >= 0 ? '#22c55e' : '#ef4444'};">📈 $${utilidadVenta.toFixed(2)}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            document.getElementById('histVentasListContainer').innerHTML = ticketsHtml;
+
             let totalVentas = 0, totalUtilidad = 0;
             let clientesUnicos = new Set();
             
@@ -1902,10 +1980,12 @@
             
             let totalVentas = 0, totalUtilidad = 0, clientesUnicos = new Set(), ventasHtml = '';
             ventasFiltradas.forEach(v => {
+                const ticketId = v.id ? v.id.slice(-6) : 'N/A';
                 const utilidad = v.productos ? v.productos.reduce((s, p) => s + ((p.precioUnitario - (p.costo || 0)) * p.cantidad), 0) : 0;
+                const pagoIcon = { efectivo:'💵', tarjeta:'💳', transferencia:'🏦', credito:'📋' }[v.metodoPago] || '💵';
                 totalVentas += v.total || 0; totalUtilidad += utilidad;
                 if (v.clientePhone) clientesUnicos.add(v.clientePhone);
-                ventasHtml += `<div class="item"><div>${new Date(v.fecha).toLocaleDateString('es')} ${v.clienteNombre || 'Cliente'}</div><div style="display:flex;justify-content:space-between;"><span>Venta: $${(v.total||0).toFixed(2)} | Util: $${utilidad.toFixed(2)}</span></div></div>`;
+                ventasHtml += `<div class="item"><div><strong>Ticket #${ticketId}</strong> - ${new Date(v.fecha).toLocaleString('es')}</div><div style="font-size:11px;">👤 ${v.clienteNombre || 'Cliente'} ${pagoIcon} ${v.metodoPago || 'efectivo'}</div><div style="display:flex;justify-content:space-between;"><span>Venta: $${(v.total||0).toFixed(2)}</span><span>Util: $${utilidad.toFixed(2)}</span></div></div>`;
             });
             
             let totalCompras = comprasFiltradas.reduce((s, c) => s + (c.total || 0), 0);
@@ -1934,7 +2014,7 @@
                 <div class="total-line"><span>🎫 Ticket Prom:</span><span>$${ticketPromedio.toFixed(2)}</span></div>
                 <div class="total-line"><span>👥 Clientes:</span><span>${clientesUnicos.size}</span></div>
                 <div class="total-line"><span>📦 Mermas:</span><span>$${totalMermas.toFixed(2)}</span></div>
-                <h2>DETALLE VENTAS</h2>
+                <h2>DETALLE DE TICKETS</h2>
                 ${ventasHtml || '<div class="item">Sin ventas en este periodo</div>'}
                 <div class="footer">📞 228 287 7441 | GAETO POS<br>${new Date().toLocaleString('es')}</div>
                 <script>setTimeout(function(){ window.print(); }, 300);<\/script>
@@ -1942,9 +2022,6 @@
             ventana.document.close();
         }
 
-        // ================================================================
-        // GENERADOR DE ETIQUETAS (TAMAÑO ANAQUEL 40x25mm)
-        // ================================================================
         function generarEtiqueta() {
             const select = document.getElementById('etiquetaProductoSelect');
             const id = select.value;
@@ -2189,9 +2266,6 @@
             showToast('✅ Compra registrada y stock actualizado');
         });
 
-        // ================================================================
-        // FUNCIONES DE IMPRESIÓN TÉRMICAS 80MM OPTIMIZADAS
-        // ================================================================
         function imprimirProductos() {
             const ventana = window.open('', '_blank', 'width=400,height=600');
             let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Productos - GAETO</title><style>@page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; } body { width: 80mm; margin: 0; padding: 4mm; font-family: 'Courier New', monospace; font-size: 12px; color: #000; } h1 { font-size: 14px; text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 8px; } .item { border-bottom: 1px dashed #eee; padding: 5px 0; } .footer { text-align: center; margin-top: 10px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px; } .no-print { text-align: center; margin-top: 20px; } @media print { .no-print { display: none; } body { padding: 2mm; } }</style></head><body><h1>📦 LISTA DE PRODUCTOS<br>GAETO POS</h1><p style="text-align:center;">Total: ${products.length} productos</p>`;
@@ -2203,12 +2277,9 @@
             ventana.document.write(html); ventana.document.close();
         }
 
-        // NUEVO: Imprimir Inventario
         function imprimirInventario() {
             const ventana = window.open('', '_blank', 'width=400,height=600');
-            let totalArticulos = 0;
-            let valorTotal = 0;
-            
+            let totalArticulos = 0, valorTotal = 0;
             let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Inventario - GAETO</title>
             <style>
                 @page { size: 80mm auto; margin: 0; } * { box-sizing: border-box; }
@@ -2226,17 +2297,8 @@
                 const costo = parseFloat(p.costo) || 0;
                 const valor = stock * costo;
                 const unidad = p.unidad || 'pza';
-                
-                totalArticulos += stock;
-                valorTotal += valor;
-                
-                html += `<div class="item">
-                    <div><strong>${p.name}</strong></div>
-                    <div style="display:flex;justify-content:space-between;font-size:11px;">
-                        <span>Stock: ${stock} ${unidad} ($${costo.toFixed(2)} c/u)</span>
-                        <span><strong>$${valor.toFixed(2)}</strong></span>
-                    </div>
-                </div>`;
+                totalArticulos += stock; valorTotal += valor;
+                html += `<div class="item"><div><strong>${p.name}</strong></div><div style="display:flex;justify-content:space-between;font-size:11px;"><span>Stock: ${stock} ${unidad} ($${costo.toFixed(2)} c/u)</span><span><strong>$${valor.toFixed(2)}</strong></span></div></div>`;
             });
             
             html += `<div class="total-grande">TOTAL ARTÍCULOS: ${totalArticulos}<br>VALOR INVENTARIO: $${valorTotal.toFixed(2)}</div>
@@ -2244,9 +2306,7 @@
             <div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div>
             <script>setTimeout(function(){ window.print(); }, 300);<\/script>
             </body></html>`;
-            
-            ventana.document.write(html);
-            ventana.document.close();
+            ventana.document.write(html); ventana.document.close();
         }
 
         function imprimirPedidos() {
@@ -2293,7 +2353,7 @@
                 const productos = v.productos ? v.productos.map(p => `${p.cantidad}x ${p.nombre}`).join(', ') : 'N/A';
                 const utilidad = v.productos ? v.productos.reduce((s, p) => s + ((p.precioUnitario - (p.costo || 0)) * p.cantidad), 0) : 0;
                 const pagoIcon = { efectivo:'💵', tarjeta:'💳', transferencia:'🏦', credito:'📋' }[v.metodoPago] || '💵';
-                html += `<div class="item"><div><strong>${v.clienteNombre || 'Cliente'}</strong></div><div style="font-size:11px;">📅 ${new Date(v.fecha).toLocaleTimeString('es')} | ${pagoIcon} ${v.metodoPago || ''}</div><div style="font-size:11px;">📦 ${productos}</div><div style="display:flex;justify-content:space-between;"><span>📈 $${utilidad.toFixed(2)}</span><span><strong>$${v.total || 0}</strong></span></div></div>`;
+                html += `<div class="item"><div><strong>Ticket #${v.id.slice(-6)} - ${v.clienteNombre || 'Cliente'}</strong></div><div style="font-size:11px;">📅 ${new Date(v.fecha).toLocaleTimeString('es')} | ${pagoIcon} ${v.metodoPago || ''}</div><div style="font-size:11px;">📦 ${productos}</div><div style="display:flex;justify-content:space-between;"><span>📈 $${utilidad.toFixed(2)}</span><span><strong>$${v.total || 0}</strong></span></div></div>`;
             });
             html += `<div class="total-grande">TOTAL: $${totalVentas.toFixed(2)}</div><div class="footer">📞 228 287 7441 | GAETO POS<br>${new Date().toLocaleDateString('es')}</div><div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#f59e0b;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">🖨️ Imprimir</button></div><script>setTimeout(function(){ window.print(); }, 300);<\/script></body></html>`;
             ventana.document.write(html); ventana.document.close();
@@ -2313,9 +2373,6 @@
             ventana.document.write(html); ventana.document.close();
         }
 
-        // ================================================================
-        // DEVOLUCIONES Y MERMAS
-        // ================================================================
         document.getElementById('btnCargarDevolucion').addEventListener('click', function() {
             const select = document.getElementById('devolucionVentaSelect');
             const id = select.value;
@@ -2357,8 +2414,7 @@
 
         function procesarDevolucion() {
             if (!devolucionSeleccionada) return;
-            let totalDevuelto = 0;
-            let itemsDevueltos = 0;
+            let totalDevuelto = 0, itemsDevueltos = 0;
             
             devolucionSeleccionada.productos.forEach((p, i) => {
                 const input = document.getElementById(`devCant_${i}`);
@@ -2451,6 +2507,157 @@
             });
         }
 
+        // ================================================================
+        // MÓDULO COBRO MOSTRADOR RÁPIDO (OCULTO CON CLAVE)
+        // ================================================================
+        let fastPosClicks = 0;
+        const titleElement = document.getElementById('titleClick');
+
+        titleElement.addEventListener('click', function() {
+            fastPosClicks++;
+            clearTimeout(window._fastPosTimer);
+            window._fastPosTimer = setTimeout(() => { fastPosClicks = 0; }, 3000);
+            
+            if (fastPosClicks === 10) {
+                fastPosClicks = 0;
+                const pass = prompt('🔑 Clave de acceso a Cobro Mostrador:');
+                if (pass === CONFIG.fastPosPassword) {
+                    abrirCobroMostrador();
+                } else if (pass !== null) {
+                    showToast('❌ Clave incorrecta');
+                }
+            }
+        });
+
+        document.getElementById('closeFastPos').addEventListener('click', () => document.getElementById('fastPosModal').classList.remove('open'));
+        document.getElementById('fastPosPagaCon').addEventListener('input', calcularCambioFastPos);
+        document.getElementById('btnFastPosCobrar').addEventListener('click', procesarCobroMostrador);
+
+        document.querySelectorAll('#fastPagoOptions button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#fastPagoOptions button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                fastMetodoPago = this.dataset.pago;
+                const efectivoContainer = document.getElementById('fastEfectivoContainer');
+                if (fastMetodoPago === 'efectivo') {
+                    efectivoContainer.style.display = 'block';
+                } else {
+                    efectivoContainer.style.display = 'none';
+                    document.getElementById('fastPosPagaCon').value = '';
+                    document.getElementById('fastPosCambio').classList.remove('show');
+                }
+            });
+        });
+
+        function setFastCash(monto) {
+            document.getElementById('fastPosPagaCon').value = monto;
+            calcularCambioFastPos();
+        }
+
+        function abrirCobroMostrador() {
+            if (cart.length === 0) { 
+                showToast('🛒 Agrega productos al carrito primero'); 
+                return; 
+            }
+            
+            const itemsContainer = document.getElementById('fastPosItemsContainer');
+            itemsContainer.innerHTML = cart.map(item => `
+                <div class="fast-pos-item">
+                    <span>${item.name} x${item.qty}</span>
+                    <span>$${(item.price * item.qty).toFixed(2)}</span>
+                </div>
+            `).join('');
+            
+            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            document.getElementById('fastPosTotal').textContent = total.toFixed(2);
+            
+            fastMetodoPago = 'efectivo';
+            document.querySelectorAll('#fastPagoOptions button').forEach(b => b.classList.remove('active'));
+            document.querySelector('#fastPagoOptions button[data-pago="efectivo"]').classList.add('active');
+            document.getElementById('fastEfectivoContainer').style.display = 'block';
+            document.getElementById('fastPosPagaCon').value = '';
+            document.getElementById('fastPosCambio').classList.remove('show');
+            
+            document.getElementById('fastPosModal').classList.add('open');
+        }
+
+        function calcularCambioFastPos() {
+            const total = parseFloat(document.getElementById('fastPosTotal').textContent) || 0;
+            const paga = parseFloat(document.getElementById('fastPosPagaCon').value) || 0;
+            const cambio = paga - total;
+            
+            const cambioEl = document.getElementById('fastPosCambio');
+            const cambioCantEl = document.getElementById('fastPosCambioCantidad');
+            
+            if (paga > 0 && cambio >= 0) {
+                cambioCantEl.textContent = cambio.toFixed(2);
+                cambioEl.classList.add('show');
+            } else {
+                cambioEl.classList.remove('show');
+            }
+        }
+
+        function procesarCobroMostrador() {
+            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            let pagaCon = 0, cambio = 0;
+
+            if (fastMetodoPago === 'efectivo') {
+                pagaCon = parseFloat(document.getElementById('fastPosPagaCon').value) || 0;
+                cambio = pagaCon - total;
+                if (pagaCon > 0 && cambio < 0) { 
+                    showToast('⚠️ El pago es insuficiente', 'error'); 
+                    return; 
+                }
+            }
+
+            for (const item of cart) {
+                const prod = products.find(p => p.id === item.id);
+                if (prod) { prod.stock = (parseInt(prod.stock) || 0) - item.qty; }
+            }
+            saveData('gaeto_productos', products);
+
+            const venta = {
+                id: 'venta_' + Date.now(),
+                fecha: new Date().toISOString(),
+                clienteNombre: 'Público Mostrador',
+                clientePhone: '0000000000',
+                direccion: 'Mostrador',
+                tipoVenta: 'mostrador',
+                metodoPago: fastMetodoPago,
+                productos: cart.map(item => {
+                    const prod = products.find(p => p.id === item.id);
+                    return { id: item.id, nombre: item.name, cantidad: item.qty, precioUnitario: item.price, costo: prod ? prod.costo || 0 : 0, unidad: prod ? prod.unidad || 'pza' : 'pza' };
+                }),
+                total: total, pagaCon: pagaCon, cambio: cambio, estado: 'CONFIRMADO'
+            };
+            ventas.push(venta);
+            saveData('gaeto_ventas', ventas);
+
+            const pedido = {
+                id: 'ped_' + Date.now(),
+                fecha: new Date().toLocaleString('es-MX'),
+                cliente: { nombre: 'Público Mostrador', phone: 'N/A' },
+                items: cart.map(item => ({ ...item })),
+                total: total,
+                direccion: { street: 'Mostrador', ref: '' },
+                estado: 'entregado', tipoVenta: 'mostrador', metodoPago: fastMetodoPago
+            };
+            pedidos.push(pedido);
+            saveData('gaeto_pedidos', pedidos);
+
+            cart = [];
+            saveData('gaeto_carrito', cart);
+            updateCartUI();
+            renderProducts(currentCategory, searchTerm);
+            
+            document.getElementById('fastPosModal').classList.remove('open');
+            
+            const ticketData = { ...pedido, metodoPago: fastMetodoPago, cambio, pagaCon };
+            generarTicket(ticketData);
+            
+            showToast('✅ Venta en mostrador registrada con éxito');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 GAETO POS - Iniciando...');
             
@@ -2521,7 +2728,7 @@
                 logoClicks++;
                 clearTimeout(window._logoTimer);
                 window._logoTimer = setTimeout(() => { logoClicks = 0; }, 3000);
-                if (logoClicks >= 5) {
+                if (logoClicks >= 10) { // CAMBIADO A 10 CLICS
                     logoClicks = 0;
                     const pass = prompt('🔐 Contraseña de administrador:')
                     if (pass === CONFIG.adminPassword) {
@@ -2565,7 +2772,6 @@
             document.getElementById('adminSearchInput').addEventListener('input', function() { renderAdminProductList(this.value); });
             document.getElementById('adminClientSearchInput').addEventListener('input', function() { renderClientHistory(this.value); });
             
-            // BUSCADOR DE INVENTARIO - EVENTO
             document.getElementById('inventarioSearchInput').addEventListener('input', function() {
                 renderInventario(this.value);
             });
