@@ -23,7 +23,6 @@
         .header-title .sub-slogan{font-size:13px;color:#888;margin-top:2px;font-weight:500}
         .header-actions{display:flex;align-items:center;flex-shrink:0;gap:6px}
         .share-btn{background:rgba(0,0,0,0.05);border:2px solid rgba(0,0,0,0.1);color:#2d2a24;padding:6px 12px;border-radius:50px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:12px}
-        .print-header-btn{background:rgba(0,0,0,0.05);border:2px solid rgba(0,0,0,0.1);color:#2d2a24;padding:6px 12px;border-radius:50px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:12px}
         .header-spacer{height:130px}
         .categories-wrapper{position:sticky;top:130px;z-index:999;background:#1e293b;border-bottom:2px solid #0f172a;border-top:3px solid #1e3a8a;box-shadow:0 4px 12px rgba(0,0,0,0.2);padding:8px 0;min-height:48px;height:auto}
         .categories{display:flex;overflow-x:auto;gap:8px;padding:0 14px;scrollbar-width:thin;scrollbar-color:#1e3a8a transparent;-webkit-overflow-scrolling:touch;align-items:center;min-height:32px}
@@ -309,7 +308,6 @@
             <div class="sub-slogan">🙏 ESTAMOS PARA SERVIRLE</div>
         </div>
         <div class="header-actions">
-            <button class="print-header-btn" id="printCatalogBtn" title="Imprimir catálogo"><i class="fas fa-print"></i></button>
             <button class="share-btn" id="shareBtn">
                 <i class="fas fa-share-alt"></i> <span>Compartir</span>
             </button>
@@ -519,9 +517,6 @@
 
                 <!-- TAB PRODUCTOS -->
                 <div class="admin-tab-content active" id="tabProductos">
-                    <div class="admin-actions-bar">
-                        <button class="print-btn-sm" onclick="imprimirProductos()"><i class="fas fa-print"></i> Imprimir Lista Precios</button>
-                    </div>
                     <h3 class="section-title">➕ Agregar / Editar producto</h3>
                     <input type="hidden" id="prodId" />
                     <label>Nombre del producto</label><input type="text" id="prodName" placeholder="Ej. Arroz Blanco" />
@@ -559,7 +554,8 @@
                 <!-- TAB INVENTARIO -->
                 <div class="admin-tab-content" id="tabInventario">
                     <div class="admin-actions-bar">
-                        <button class="print-btn-sm" onclick="imprimirInventario()"><i class="fas fa-print"></i> Imprimir Inventario 80mm</button>
+                        <button class="print-btn-sm" onclick="imprimirInventario()"><i class="fas fa-print"></i> Inventario 80mm</button>
+                        <button class="print-btn-sm" onclick="imprimirCatalogo()" style="background:#1e3a8a;color:#fff;"><i class="fas fa-tags"></i> Lista Precios Público</button>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8f6f3;border-radius:12px;border:1px solid #ddd;margin:10px 0;">
                         <i class="fas fa-search" style="color:#888;font-size:14px;"></i>
@@ -786,7 +782,7 @@
                 <button class="btn-save btn-secondary" id="resetCategoriesBtn" onclick="resetCategories()">🔄 Restaurar categorías por defecto</button>
                 <button class="btn-save btn-danger" id="clearOrdersBtn" onclick="eliminarTodosPedidos()" style="background:#e67e22;">🗑️ Eliminar todos los pedidos</button>
 
-                <div class="help-text"><strong>📌 Acceso Admin:</strong> 10 clics en el LOGO · Contraseña: <strong>admin123</strong><br /><strong>⚡ Cobro Mostrador:</strong> 10 clics en el título "GAETO POS" (arriba a la izquierda). Te pedirá clave <strong>admin1310</strong>. Oculto para clientes.<br /><strong>📸 Imágenes:</strong> Puedes subir fotos desde tu PC o celular al agregar o editar un producto.<br /><strong>🔄 Sincronización:</strong> Los datos se guardan automáticamente en la nube.<br /><strong>📦 Inventario:</strong> Módulo de inventario y valoración disponible.<br /><strong>📏 Unidades:</strong> pza, kg, ml, m3, jgo, lt, gr, doc, paq, caja, bolsa.<br /><strong>🖨️ Impresión:</strong> Formato térmico 80mm optimizado.<br /><strong>💰 POS:</strong> Métodos de pago: Efectivo, Transferencia, Crédito Personal · Cambio automático.<br /><strong>📱 Escáner:</strong> Usa la cámara para leer códigos de barras.<br /><strong>🏷️ SKU:</strong> Generador automático de códigos SKU.<br /><strong>🏷️ Etiquetas:</strong> Imprime etiquetas con nombre, código de barras y precio.<br /><strong>📊 Histórico:</strong> Reportes por rango de fechas en pestaña Ventas.</div>
+                <div class="help-text"><strong>📌 Acceso Admin:</strong> 10 clics en el LOGO · Contraseña: <strong>admin123</strong><br /><strong>⚡ Cobro Mostrador:</strong> 10 clics en el título "GAETO POS" (arriba a la izquierda). Te pedirá clave <strong>admin1310</strong>. Oculto para clientes.<br /><strong>📸 Imágenes:</strong> Puedes subir fotos desde tu PC o celular al agregar o editar un producto.<br /><strong>🔄 Sincronización:</strong> Los datos se guardan automáticamente en la nube.<br /><strong>📦 Inventario:</strong> Módulo de inventario, valoración e impresión de listas disponible.<br /><strong>📏 Unidades:</strong> pza, kg, ml, m3, jgo, lt, gr, doc, paq, caja, bolsa.<br /><strong>🖨️ Impresión:</strong> Formato térmico 80mm optimizado.<br /><strong>💰 POS:</strong> Métodos de pago: Efectivo, Transferencia, Crédito Personal · Cambio automático.<br /><strong>📱 Escáner:</strong> Usa la cámara para leer códigos de barras.<br /><strong>🏷️ SKU:</strong> Generador automático de códigos SKU.<br /><strong>🏷️ Etiquetas:</strong> Imprime etiquetas con nombre, código de barras y precio.<br /><strong>📊 Histórico:</strong> Reportes por rango de fechas en pestaña Ventas.</div>
             </div>
         </div>
     </div>
@@ -875,7 +871,6 @@
             return limpio;
         }
         
-        // Función helper para obtener la fecha local en formato YYYY-MM-DD (evita bugs de zona horaria)
         function getLocalDateStr(dateObj) {
             return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
         }
@@ -1840,13 +1835,12 @@
             saveData('gaeto_historial_ventas', historial);
             
             ventas = ventas.filter(v => {
-                if (!v.fecha) return true; // Keep if no date
+                if (!v.fecha) return true;
                 const ventaDate = new Date(v.fecha);
                 return getLocalDateStr(ventaDate) !== hoyStr;
             });
             saveData('gaeto_ventas', ventas);
             
-            // Filter pedidos using timestamp in ID to avoid locale parsing issues
             const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
             pedidos = pedidos.filter(p => {
                 const ts = parseInt(p.id.replace('ped_', ''));
@@ -1872,7 +1866,6 @@
             document.getElementById('corteDetalle').innerHTML = 'Día reiniciado. Las ventas fueron archivadas.';
             document.getElementById('topProductosContainer').innerHTML = '<small style="color:#aaa;">Calcula el corte para ver el top</small>';
             
-            // Also clear historical stats
             document.getElementById('histTotalVentas').textContent = '$0';
             document.getElementById('histUtilidad').textContent = '$0';
             document.getElementById('histCompras').textContent = '$0';
@@ -1911,7 +1904,6 @@
                 return fm >= inicio && fm <= fin;
             });
             
-            // RENDERIZAR LISTA DE TICKETS
             let ticketsHtml = '';
             if (ventasFiltradas.length === 0) {
                 ticketsHtml = '<small style="color:#aaa;">No hay ventas en este periodo.</small>';
@@ -2728,7 +2720,7 @@
                 logoClicks++;
                 clearTimeout(window._logoTimer);
                 window._logoTimer = setTimeout(() => { logoClicks = 0; }, 3000);
-                if (logoClicks >= 10) { // CAMBIADO A 10 CLICS
+                if (logoClicks >= 10) { 
                     logoClicks = 0;
                     const pass = prompt('🔐 Contraseña de administrador:')
                     if (pass === CONFIG.adminPassword) {
@@ -2953,8 +2945,6 @@
                 const msg = `🛒 *${CONFIG.storeName}*\n━━━━━━━━━━━━━━━\n📍 Punto de Venta · Servicio a domicilio\n📞 Pedidos: ${CONFIG.whatsappNumber}\n━━━━━━━━━━━━━━━\n✅ ¡Gracias por su preferencia!\n🙏 Estamos para servirle\n📦 ${CONFIG.storeName} - Tu tienda de confianza\n\n👇 Haz tu pedido aquí:\n${CONFIG.storeUrl}`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
             });
-
-            document.getElementById('printCatalogBtn').addEventListener('click', function() { imprimirCatalogo(); });
 
             document.getElementById('categoriesContainer').addEventListener('click', function(e) {
                 const btn = e.target.closest('.cat-btn');
